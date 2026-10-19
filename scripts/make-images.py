@@ -136,14 +136,20 @@ def sample_poster(fr, fb):
 
 
 def shots(shots_dir):
-    # Only the pixel office is safe to show before the de-branded build exists: the left rail
-    # (which carries the edition badge) and the floating help button are cropped away.
-    office = os.path.join(shots_dir, '11-office.png')
+    # Screens come from the neutral build run with demo data only (a fake api.example-ai.com profile
+    # and a local fake update feed), so no real Key, site or data path appears in them.
+    office = os.path.join(shots_dir, '07-office.png')
     if os.path.exists(office):
         im = Image.open(office).convert('RGB')
-        im = im.crop((104, 0, im.width, 985))
-        im.thumbnail((1280, 1280), Image.LANCZOS)
+        im = im.crop((round(im.width * 58 / 1024), 0, im.width, im.height))
+        im = im.resize((1280, round(im.height * 1280 / im.width)), Image.LANCZOS)
         save_webp(im, 'shot-office.webp', quality=80)
+    for src, name in (('02-manual-add', 'shot-manual-add.webp'), ('04-import', 'shot-import.webp'), ('06-update', 'shot-update.webp')):
+        p = os.path.join(shots_dir, src + '.png')
+        if os.path.exists(p):
+            im = Image.open(p).convert('RGB')
+            im = im.resize((1280, round(im.height * 1280 / im.width)), Image.LANCZOS)
+            save_webp(im, name, quality=80)
 
 
 def main():
@@ -157,10 +163,8 @@ def main():
     icon = Image.open(a.icon).convert('RGBA')
     icons(icon)
     og_image(icon, a.font_regular, a.font_bold)
-    poster(icon, a.font_regular, a.font_bold, 'video-general.webp', '入门教程 · 通用版',
-           '10 分钟上手\n万能创作终端', '下载安装 → 配置三个 Key → 做出第一张图', ((38, 44, 98), (96, 84, 196)))
-    poster(icon, a.font_regular, a.font_bold, 'video-smart.webp', '接入教程 · 智能路由站点',
-           '一键导入，\n模型自动选好', '创建智能 Key → 一键导入 → 开始创作', ((18, 70, 92), (52, 132, 168)))
+    poster(icon, a.font_regular, a.font_bold, 'video-general.webp', '新手教程 · 分章节',
+           '10 分钟上手\n万能创作终端', '下载安装 → 连接站点 → 做出第一件作品', ((38, 44, 98), (96, 84, 196)))
     poster(icon, a.font_regular, a.font_bold, 'video-promo.webp', '宣传片',
            '想做什么，\n直接说。', '文案、图片、视频、项目，一个窗口做完', ((70, 30, 90), (196, 84, 132)))
     sample_poster(a.font_regular, a.font_bold)

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Site checker for the public repository.
 //
-//   node scripts/check-site.mjs                 static checks + headless browser checks
-//   node scripts/check-site.mjs --static        static checks only (no browser needed)
+//   node scripts/check-site.mjs                 static checks + live download links + headless browser checks
+//   node scripts/check-site.mjs --static        static checks only (no browser, no network); add --live to probe links
+//   node scripts/check-site.mjs --offline       everything except the live download-link probe
 //   node scripts/check-site.mjs --sync          regenerate site/assets/js/config-fallback.js from site/config.json
 //   node scripts/check-site.mjs --shots DIR     where to write screenshots (default: ./dist/shots)
 //   node scripts/check-site.mjs --site DIR      check an unpacked partner package (folder with index.html)
@@ -13,6 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
+import { execFile } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -175,16 +177,41 @@ export function validateConfig(cfg) {
     str(a.size, `${b}.size`, { allowTodo: true });
     str(a.sha256, `${b}.sha256`, { allowTodo: true });
     if (a.sha256 && !/^TODO/i.test(a.sha256) && !/^[0-9a-f]{64}$/i.test(a.sha256)) errs.push(`${b}.sha256 must be 64 hex characters`);
+    if (a.bytes !== undefined) {
+      if (!Number.isInteger(a.bytes) || a.bytes <= 0) errs.push(`${b}.bytes must be a positive integer (exact file size)`);
+      else if (typeof a.size === 'string' && /^[\d.]+ MB$/.test(a.size) && (a.bytes / 1048576).toFixed(1) !== a.size.split(' ')[0])
+        errs.push(`${b}.size "${a.size}" does not match bytes ${a.bytes} (${(a.bytes / 1048576).toFixed(1)} MB)`);
+    }
   }
+  const ids = new Set();
   if (!Array.isArray(cfg.videos)) errs.push('videos must be an array');
   else
     cfg.videos.forEach((v, i) => {
-      str(v.id, `videos[${i}].id`);
-      str(v.title, `videos[${i}].title`);
-      str(v.desc, `videos[${i}].desc`, { required: false });
-      str(v.poster, `videos[${i}].poster`, { url: true });
-      str(v.url, `videos[${i}].url`, { required: false, url: true });
-      str(v.embed, `videos[${i}].embed`, { required: false, url: true });
+      const b = `videos[${i}]`;
+      str(v.id, `${b}.id`);
+      if (ids.has(v.id)) errs.push(`${b}.id "${v.id}" is used twice`);
+      ids.add(v.id);
+      str(v.title, `${b}.title`);
+      str(v.desc, `${b}.desc`, { required: false });
+      str(v.poster, `${b}.poster`, { url: true });
+      str(v.url, `${b}.url`, { required: false, url: true });
+      str(v.embed, `${b}.embed`, { required: false, url: true });
+      if (v.chapters === undefined) return;
+      if (!Array.isArray(v.chapters)) return errs.push(`${b}.chapters must be an array`);
+      const live = !!((v.url && v.url.trim()) || (v.embed && v.embed.trim()));
+      let prev = -1;
+      v.chapters.forEach((c, j) => {
+        const cp = `${b}.chapters[${j}]`;
+        if (!c || typeof c !== 'object') return errs.push(`${cp} must be an object`);
+        str(c.title, `${cp}.title`);
+        str(c.start, `${cp}.start`, { required: live });
+        if (!live && !c.start) return;
+        if (typeof c.start !== 'string' || !/^\d+(:\d{2}){1,2}$/.test(c.start)) return errs.push(`${cp}.start must look like 0:00 or 1:02:03`);
+        const sec = c.start.split(':').reduce((acc, x) => acc * 60 + Number(x), 0);
+        if (j === 0 && sec !== 0) errs.push(`${cp}.start should be 0:00 (first chapter)`);
+        if (sec <= prev) errs.push(`${cp}.start must be later than the previous chapter`);
+        prev = sec;
+      });
     });
   const c = cfg.community || {};
   str(c.qq_group, 'community.qq_group');
@@ -227,7 +254,65 @@ function checkConfig() {
   return cfg;
 }
 
-/* ---------- 4. headless browser ---------- */
+/* ---------- 4. live download links ---------- */
+// Follows redirects (GitHub release links answer 302 to a CDN) and compares the final size with bytes.
+// curl is preferred when present because it honours the proxy setups Node's fetch ignores.
+function probeCurl(url) {
+  return new Promise((resolve) => {
+    execFile('curl', ['-sIL', '--max-time', '40', url], { windowsHide: true }, (err, stdout) => {
+      if (err && !stdout) return resolve(null);
+      const blocks = stdout.split(/\r?\n\r?\n/).filter((b) => /^HTTP\//.test(b.trim()));
+      const last = blocks[blocks.length - 1] || '';
+      const status = Number((last.match(/^HTTP\/[\d.]+ (\d+)/) || [])[1] || 0);
+      const length = Number((last.match(/^content-length:\s*(\d+)/im) || [])[1] || 0);
+      resolve(status ? { status, length } : { status: 0, error: (err && err.message) || 'no response' });
+    });
+  });
+}
+
+async function probe(url) {
+  const viaCurl = await probeCurl(url);
+  if (viaCurl) return viaCurl;
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 30000);
+  try {
+    let res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: ctl.signal });
+    // Some mirrors reject HEAD; a one-byte range request is the cheapest fallback.
+    if (res.status === 405 || res.status === 403) {
+      res = await fetch(url, { headers: { Range: 'bytes=0-0' }, redirect: 'follow', signal: ctl.signal });
+      const total = Number((res.headers.get('content-range') || '').split('/')[1]);
+      res.body?.cancel().catch(() => {});
+      return { status: res.status === 206 ? 200 : res.status, length: total || Number(res.headers.get('content-length')) };
+    }
+    return { status: res.status, length: Number(res.headers.get('content-length')) };
+  } catch (e) {
+    return { status: 0, error: e.name === 'AbortError' ? 'timeout' : e.message };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function checkLive(cfg) {
+  console.log('\n[4] Download links are live (HEAD, following redirects)');
+  const assets = (cfg.release && cfg.release.assets) || {};
+  const jobs = [];
+  for (const [id, a] of Object.entries(assets)) {
+    for (const [kind, url] of [['url', a.url], ['mirror', a.mirror]]) {
+      if (!url || /^TODO/i.test(url) || !/^https?:/i.test(url)) continue;
+      jobs.push((async () => {
+        let r = await probe(url);
+        if (!r.status) r = await probe(url);
+        const name = `${id}.${kind}`;
+        if (r.status !== 200) return fail(`${name}: ${url} -> ${r.status || r.error}`);
+        if (Number.isInteger(a.bytes) && r.length && r.length !== a.bytes) return fail(`${name}: size ${r.length} != bytes ${a.bytes}`);
+        ok(`${name}: 200${r.length ? `, ${r.length} bytes` : ''}${Number.isInteger(a.bytes) && r.length === a.bytes ? ' (matches)' : ''}`);
+      })());
+    }
+  }
+  await Promise.all(jobs);
+}
+
+/* ---------- 5. headless browser ---------- */
 function loadPlaywright() {
   const req = createRequire(import.meta.url);
   const tries = [process.env.PLAYWRIGHT_CORE, 'playwright-core', 'C:/Users/Administrator/Documents/Codex/omni-creator/node_modules/playwright-core'].filter(Boolean);
@@ -283,7 +368,7 @@ async function loadAllImages(page) {
 }
 
 async function checkBrowser(cfg) {
-  console.log('\n[4] Headless browser (console errors, failed requests, layout, screenshots)');
+  console.log('\n[5] Headless browser (console errors, failed requests, layout, screenshots)');
   const pw = loadPlaywright();
   const exe = findBrowser();
   if (!pw || !exe) return fail('playwright-core or Chrome/Edge not found (set PLAYWRIGHT_CORE / CHROME_PATH, or use --static)');
@@ -388,14 +473,107 @@ async function checkBrowser(cfg) {
     else ok(label);
     await ctx.close();
   }
+  await checkVideos(browser, base, cfg);
   await browser.close();
   srv.close();
   console.log(`  shots ${shots}`);
 }
 
+// Simulates a published chaptered video (no real video needs to exist yet): the player opens
+// on click, chapter buttons seek, and the current chapter is highlighted. --test-video FILE
+// supplies a short clip (any format Chrome plays); without it only the embed path is tested.
+async function checkVideos(browser, base, cfg) {
+  const withChapters = (cfg.videos || []).find((v) => Array.isArray(v.chapters) && v.chapters.length >= 3);
+  if (!withChapters) return ok('video chapters: no chaptered video configured, skipped');
+  const n = withChapters.chapters.length;
+  const timed = (extra) => {
+    const c = JSON.parse(JSON.stringify(cfg));
+    const v = c.videos.find((x) => x.id === withChapters.id);
+    v.chapters.forEach((ch, i) => (ch.start = `0:${String(i * 2).padStart(2, '0')}`));
+    Object.assign(v, extra);
+    return c;
+  };
+  const run = async (label, conf, routes, fn) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+    await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(conf) }));
+    for (const [pat, handler] of routes) await page.route(pat, handler);
+    await page.goto(base, { waitUntil: 'load' });
+    await page.waitForFunction(() => document.querySelectorAll('#dl-grid .dl-card').length >= 4, null, { timeout: 5000 }).catch(() => {});
+    const card = page.locator(`[data-video="${withChapters.id}"]`);
+    try {
+      await fn(page, card, errors);
+    } catch (e) {
+      errors.push(e.message.split('\n')[0]);
+    }
+    if (errors.length) errors.forEach((e) => fail(`video ${label}: ${e}`));
+    else ok(`video ${label}`);
+    await ctx.close();
+  };
+
+  await run('pending (no url): chapters listed, no player opens', cfg, [], async (page, card, errors) => {
+    if (await card.evaluate((c) => c.classList.contains('ready'))) errors.push('card marked ready without a url');
+    const count = await card.locator('.ch-list button').count();
+    if (count !== n) errors.push(`expected ${n} chapter buttons, got ${count}`);
+    await card.locator('.ch-list button').nth(1).click();
+    if (await page.locator('#video-dialog').evaluate((d) => d.open)) errors.push('dialog opened for a pending video');
+    if (!/制作中/.test(await page.locator('#toast').textContent())) errors.push('no "coming soon" toast');
+  });
+
+  await run('embed: chapter click reloads the iframe at the chapter start', timed({ embed: '__test__/embed.html' }), [
+    ['**/__test__/embed.html*', (r) => r.fulfill({ contentType: 'text/html', body: '<!doctype html><title>e</title>' })],
+  ], async (page, card, errors) => {
+    await card.locator('.ch-list button').nth(2).click();
+    await page.waitForSelector('#vd-stage iframe');
+    const src = await page.locator('#vd-stage iframe').getAttribute('src');
+    if (!/[?&]t=4(&|$)/.test(src)) errors.push(`iframe src missing t=4: ${src}`);
+    await page.locator('#vd-chapters button').nth(3).click();
+    const src2 = await page.locator('#vd-stage iframe').getAttribute('src');
+    if (!/[?&]t=6(&|$)/.test(src2) || /t=4/.test(src2)) errors.push(`iframe not re-pointed to t=6: ${src2}`);
+    const on = await page.locator('#vd-chapters button.on').count();
+    if (on !== 1) errors.push(`expected one highlighted chapter, got ${on}`);
+    await page.locator('#vd-close').click();
+    if (await page.locator('#vd-stage iframe').count()) errors.push('iframe not removed on close');
+  });
+
+  const clip = opt('--test-video', '');
+  if (!clip || !fs.existsSync(clip)) return ok('video file playback: skipped (pass --test-video FILE to test seeking)');
+  const ext = path.extname(clip).toLowerCase();
+  const type = ext === '.webm' ? 'video/webm' : 'video/mp4';
+  const body = fs.readFileSync(clip);
+  await run('file: player opens at chapter, seeking and highlight follow', timed({ url: `__test__/clip${ext}` }), [
+    // Media elements can only seek when the server honours Range requests.
+    [`**/__test__/clip${ext}`, (r) => {
+      const m = /bytes=(\d+)-(\d*)/.exec(r.request().headers()['range'] || '');
+      if (!m) return r.fulfill({ status: 200, contentType: type, headers: { 'accept-ranges': 'bytes' }, body });
+      const start = Number(m[1]);
+      const end = m[2] ? Math.min(Number(m[2]), body.length - 1) : body.length - 1;
+      return r.fulfill({ status: 206, contentType: type, headers: { 'accept-ranges': 'bytes', 'content-range': `bytes ${start}-${end}/${body.length}` }, body: body.subarray(start, end + 1) });
+    }],
+  ], async (page, card, errors) => {
+    if (!(await card.evaluate((c) => c.classList.contains('ready')))) errors.push('card not marked ready');
+    await card.locator('.ch-list button').nth(2).click();
+    await page.waitForSelector('#vd-stage video');
+    await page.waitForFunction(() => { const v = document.querySelector('#vd-stage video'); return v && v.readyState >= 1 && v.currentTime >= 3.9; }, null, { timeout: 2500 })
+      .catch(() => errors.push('video did not start at chapter 3 (4s)'));
+    await page.locator('#vd-chapters button').nth(1).click();
+    const t = await page.locator('#vd-stage video').evaluate((v) => v.currentTime);
+    if (Math.abs(t - 2) > 0.6) errors.push(`seek to chapter 2 landed at ${t.toFixed(2)}s`);
+    await page.waitForTimeout(200);
+    const idx = await page.locator('#vd-chapters button').evaluateAll((bs) => bs.findIndex((b) => b.classList.contains('on')));
+    if (idx !== 1) errors.push(`highlighted chapter index ${idx}, expected 1`);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(150);
+    if (await page.locator('#vd-stage video').count()) errors.push('video not removed when the dialog closed');
+  });
+}
+
 checkForbidden();
 checkLinks();
 const cfg = checkConfig();
+if (cfg && (flag('--live') || (!flag('--static') && !flag('--offline')))) await checkLive(cfg);
 if (cfg && !flag('--static')) await checkBrowser(cfg);
 console.log(failures ? `\n${failures} problem(s) found.` : '\nAll checks passed.');
 process.exit(failures ? 1 : 0);

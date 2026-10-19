@@ -60,12 +60,13 @@ omnicreator-site-<版本号>/
 | --- | --- |
 | `release.assets.*.mirror` | 如果你在自己的服务器或对象存储上提供安装包镜像，填镜像下载地址，卡片上会出现「国内镜像」按钮。**请保证文件与 GitHub 发布的完全一致**（可用页面上的 SHA256 核对） |
 | `release.mirror_note` | 「GitHub 下载很慢？」里显示的文字，可以写你的镜像说明 |
-| `videos[].url` / `videos[].embed` | 教程视频链接。`url` 填视频页面（新窗口打开）或 mp4 地址（页面内播放）；`embed` 填播放器嵌入地址 |
+| `videos[].url` / `videos[].embed` | 教程视频链接。`url` 填视频页面（新窗口打开）或 mp4 地址（页面内播放）；`embed` 填播放器嵌入地址。官方视频上线后会随站点包更新，一般不用改 |
+| `videos[].chapters[].start` | 新手教程的章节开始时间（`m:ss`）。填了视频地址后每一章都要有时间，点章节会跳到那里 |
 
 ### 3. 请不要修改
 
 - `product.name`（软件名称「万能创作终端」）、`community`（官方用户群）和页面上的「使用许可」内容。
-- `release.version`、`release.assets` 里的 `url`、`size`、`sha256`：这些跟随官方发布更新。官方发布新版本时，下载最新的站点包，把你的 `partner` 部分复制过去即可。
+- `release.version`、`release.assets` 里的 `url`、`size`、`bytes`、`sha256`：这些跟随官方发布更新。官方发布新版本时，下载最新的站点包，把你的 `partner` 部分复制过去即可。
 - 不要在页面中加入会误导用户的内容，例如声称软件归你所有，或修改安装包。
 
 改完后，在本目录运行下面任一命令，在浏览器打开 `http://localhost:8000` 预览：

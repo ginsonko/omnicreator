@@ -189,6 +189,31 @@
     }
   }
 
+  // "m:ss" or "h:mm:ss" -> seconds; NaN when empty or malformed.
+  function toSeconds(s) {
+    if (typeof s === 'number') return s >= 0 ? s : NaN;
+    if (typeof s !== 'string' || !/^\d+(:\d{1,2}){1,2}$/.test(s.trim())) return NaN;
+    return s.trim().split(':').reduce(function (a, x) { return a * 60 + Number(x); }, 0);
+  }
+  function chaptersOf(v) {
+    return (Array.isArray(v.chapters) ? v.chapters : []).filter(function (c) { return c && c.title; }).map(function (c) {
+      return { title: String(c.title), start: String(c.start == null ? '' : c.start).trim(), sec: toSeconds(c.start) };
+    });
+  }
+  function chapterList(chs, onPick, cls) {
+    var ol = el('ol', { class: cls });
+    chs.forEach(function (c, i) {
+      var timed = !isNaN(c.sec);
+      var b = el('button', { type: 'button', 'data-sec': timed ? String(c.sec) : null, 'aria-label': (timed ? c.start + ' ' : '') + c.title }, [
+        el('span', { class: 'ch-t', text: timed ? c.start : String(i + 1) }),
+        el('span', { class: 'ch-n', text: c.title })
+      ]);
+      b.addEventListener('click', function () { onPick(c, b); });
+      ol.appendChild(el('li', null, [b]));
+    });
+    return ol;
+  }
+
   function renderVideos(cfg) {
     var list = cfg.videos || [];
     $$('[data-video]').forEach(function (card) {
@@ -200,30 +225,78 @@
       var poster = safeUrl(v.poster);
       if (poster) img.setAttribute('src', poster);
       var url = safeUrl(v.url), embed = safeUrl(v.embed);
-      btn.setAttribute('aria-label', (url || embed ? '播放：' : '即将上线：') + (v.title || ''));
-      if (url || embed) card.classList.add('ready');
-      btn.onclick = function () {
-        if (!url && !embed) { toast('视频正在制作中，上线后会放在这里'); return; }
-        if (!embed && !/\.(mp4|webm|m3u8)(\?|#|$)/i.test(url)) { window.open(url, '_blank', 'noopener'); return; }
-        openVideo(v.title, embed, url);
+      var ready = !!(url || embed);
+      var external = ready && !embed && !/\.(mp4|webm|m3u8)(\?|#|$)/i.test(url);
+      btn.setAttribute('aria-label', (ready ? '播放：' : '即将上线：') + (v.title || ''));
+      card.classList.toggle('ready', ready);
+      var play = function (sec) {
+        if (!ready) { toast('视频正在制作中，上线后会放在这里'); return; }
+        if (external) { window.open(url, '_blank', 'noopener'); return; }
+        openVideo(v, embed, url, sec || 0);
       };
+      btn.onclick = function () { play(0); };
+      var old = $('.chapters', card);
+      if (old) old.parentNode.removeChild(old);
+      var chs = chaptersOf(v);
+      if (chs.length) {
+        var box = el('div', { class: 'chapters' }, [el('p', { class: 'ch-head', text: ready ? '章节（点一下跳到那里）' : '章节（视频上线后可点击跳转）' })]);
+        box.appendChild(chapterList(chs, function (c) { play(isNaN(c.sec) ? 0 : c.sec); }, 'ch-list'));
+        card.appendChild(box);
+      }
     });
   }
 
-  function openVideo(title, embed, url) {
-    var d = $('#video-dialog'), stage = $('#vd-stage');
-    $('#vd-title').textContent = title || '教程视频';
+  // Embedded players cannot be seeked from outside, so a chapter jump reloads the iframe with a start time.
+  function embedAt(embed, sec) {
+    if (!sec) return embed;
+    var u = embed.replace(/([?&])(t|start)=[^&#]*/g, '$1').replace(/[?&]+(#|$)/, '$1');
+    return u + (u.indexOf('?') === -1 ? '?' : '&') + 't=' + Math.floor(sec) + '&start=' + Math.floor(sec);
+  }
+
+  function openVideo(v, embed, url, sec) {
+    var d = $('#video-dialog'), stage = $('#vd-stage'), chBox = $('#vd-chapters');
+    var title = v.title || '教程视频';
+    $('#vd-title').textContent = title;
     stage.textContent = '';
-    if (embed) stage.appendChild(el('iframe', { src: embed, title: title || '视频', allow: 'autoplay; fullscreen; picture-in-picture', allowfullscreen: '', referrerpolicy: 'no-referrer-when-downgrade' }));
-    else stage.appendChild(el('video', { src: url, controls: '', autoplay: '', playsinline: '', preload: 'metadata' }));
+    chBox.textContent = '';
+    var media = null;
+    var mount = function (at) {
+      stage.textContent = '';
+      if (embed) {
+        stage.appendChild(el('iframe', { src: embedAt(embed, at), title: title, allow: 'autoplay; fullscreen; picture-in-picture', allowfullscreen: '', referrerpolicy: 'no-referrer-when-downgrade' }));
+      } else {
+        media = el('video', { src: url, controls: '', autoplay: '', playsinline: '', preload: 'metadata' });
+        if (at) media.addEventListener('loadedmetadata', function () { media.currentTime = at; }, { once: true });
+        stage.appendChild(media);
+      }
+    };
+    mount(sec);
+    var chs = chaptersOf(v).filter(function (c) { return !isNaN(c.sec); });
+    if (chs.length) {
+      var list = chapterList(chs, function (c) {
+        if (media) { media.currentTime = c.sec; var pr = media.play(); if (pr && pr.catch) pr.catch(function () {}); }
+        else mount(c.sec);
+        mark(c.sec);
+      }, 'ch-list vd-ch');
+      var buttons = $$('button', list);
+      var mark = function (t) {
+        var cur = -1;
+        chs.forEach(function (c, i) { if (t + 0.25 >= c.sec) cur = i; });
+        buttons.forEach(function (b, i) { b.classList.toggle('on', i === cur); if (i === cur) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+      };
+      chBox.appendChild(list);
+      if (media) media.addEventListener('timeupdate', function () { mark(media.currentTime); });
+      mark(sec || 0);
+    }
     var foot = $('#vd-foot');
     foot.textContent = '';
     if (url) foot.appendChild(el('a', { href: url, target: '_blank', rel: 'noopener', text: '在新窗口打开 ↗' }));
-    if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+    if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
   }
   function closeVideo() {
     var d = $('#video-dialog');
     $('#vd-stage').textContent = '';
+    $('#vd-chapters').textContent = '';
     if (d.close) d.close(); else d.removeAttribute('open');
   }
 
@@ -318,7 +391,7 @@
     });
 
     $('#vd-close').addEventListener('click', closeVideo);
-    $('#video-dialog').addEventListener('close', function () { $('#vd-stage').textContent = ''; });
+    $('#video-dialog').addEventListener('close', function () { $('#vd-stage').textContent = ''; $('#vd-chapters').textContent = ''; });
     $('#video-dialog').addEventListener('click', function (e) { if (e.target === e.currentTarget) closeVideo(); });
 
     var typer = $('#typer');

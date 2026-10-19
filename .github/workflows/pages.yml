@@ -1,10 +1,14 @@
 name: Deploy site to GitHub Pages
 
+# Publishes site/ at https://ginsonko.github.io/omnicreator/ and the app's update feed at
+# https://ginsonko.github.io/omnicreator/update/omni-update-neutral.json (one of the neutral edition's updateFeeds).
+
 on:
   push:
     branches: [main]
     paths:
       - 'site/**'
+      - 'update/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -33,11 +37,21 @@ jobs:
       - name: Static checks (brand strings, links, config schema)
         run: node scripts/check-site.mjs --static
 
+      - name: Assemble Pages artifact (site/ + update feed)
+        run: |
+          set -euo pipefail
+          rm -rf _pages
+          cp -R site _pages
+          mkdir -p _pages/update
+          cp update/omni-update-neutral.json _pages/update/
+          node -e "const j=require('./_pages/update/omni-update-neutral.json'); if(j.schema!=='omni-update/1'||!j.version) throw new Error('bad update feed')"
+          touch _pages/.nojekyll
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _pages
 
       - id: deployment
         uses: actions/deploy-pages@v4

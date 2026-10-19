@@ -169,8 +169,8 @@
 
     <div class="showcase">
       <figure class="shot">
-        <div class="win"><i></i><i></i><i></i><span>工作室 · 像素办公室</span></div>
-        <img src="assets/img/shot-office.webp" width="1280" height="719" loading="lazy" decoding="async" alt="工作室页面：像素风办公室里，AI 伙伴分别在对话区、创作台、剪辑间、资料室和会议桌工作，右侧是同事名单与进度">
+        <div class="win"><i></i><i></i><i></i><span>工作室 · 像素小镇</span></div>
+        <img src="assets/img/shot-office.webp" width="1280" height="818" loading="lazy" decoding="async" alt="工作室页面：像素风小镇里有对话区、创作台、剪辑间、资料室、会议桌和休息区，右侧是伙伴名单（示例：还没有对话，伙伴们都在休息）">
       </figure>
       <div class="showcase-copy">
         <h3>千面：换一套界面，连用法都变了</h3>
@@ -210,7 +210,7 @@
       <li class="step">
         <span class="step-n">3</span>
         <h3>连接</h3>
-        <p>站点支持「一键导入」就点一下，配置自动带进软件；不支持就到「设置 → 连接配置 → 手动添加」，填好 <b>文本 / 图片 / 视频</b> 三个 Key 和模型。</p>
+        <p>站点支持「一键导入」就点一下，配置自动带进软件；不支持就到「配置 → 连接 → 手动添加」，填一次接口地址和 Key，再选 <b>文本 / 生图 / 视频</b> 模型。</p>
       </li>
       <li class="step">
         <span class="step-n">4</span>
@@ -232,20 +232,24 @@
       <article class="path" id="path-a">
         <p class="path-tag">A · 通用接法</p>
         <h3>任何标准 new-api / OpenAI 兼容站点</h3>
-        <p>适合所有站点。自己创建 Key，再在软件里填好三个模型位置。</p>
+        <p>适合所有站点。自己创建 Key，在软件里填一次地址和 Key，再选三个默认模型。</p>
         <ol class="numbered">
-          <li>在站点的「令牌 / API Key」页创建 Key（建议按用途建三个：文本、图片、视频，方便分开看花费；一个 Key 能用所有模型时也可以只建一个）。</li>
+          <li>在站点的「令牌 / API Key」页创建一个 Key。一般一个就够；站点把文本、生图、视频分在不同分组时，再按用途多建几个。</li>
           <li>记下站点的接口地址，通常是 <code>https://你的站点域名/v1</code>。</li>
-          <li>打开软件「设置 → 连接配置 → 手动添加」，填写名称和接口地址。</li>
-          <li>在 <b>文本</b>、<b>图片</b>、<b>视频</b> 三处分别填 Key，并从下拉列表里选模型（列表从站点自动读取）。</li>
-          <li>点「检查连接」，显示“连接正常”就完成了。</li>
+          <li>打开软件「配置 → 连接 → 手动添加」，填 <b>名称</b>、<b>接口地址</b>、<b>API Key</b>。</li>
+          <li>选 <b>文本</b>、<b>生图</b>、<b>视频</b> 默认模型（点模型框会列出这个 Key 能用的模型）。某一项要用别的 Key 或地址，点它右边的「单独设置」。</li>
+          <li>点「保存」，再点「检查连接」，显示“连接正常”就完成了。</li>
         </ol>
-        <p class="fine">不知道选哪个模型？文本选站点推荐的对话模型；图片选名字里带 image 的模型；视频选站点标注为视频的模型。</p>
+        <figure class="shot shot-sm">
+          <img src="assets/img/shot-manual-add.webp" width="1280" height="771" loading="lazy" decoding="async" alt="软件「配置 → 连接 → 手动添加」表单：上面是名称、接口地址和 API Key，下面是文本、生图、视频默认模型，视频一项点了「单独设置」（示例数据）">
+          <figcaption>手动添加：地址和 Key 填一次，三项模型各自选；需要时某一项可以「单独设置」。示例数据。</figcaption>
+        </figure>
+        <p class="fine">不知道选哪个模型？文本选站点推荐的对话模型；生图选名字里带 image 的模型；视频选站点标注为视频的模型。看图模型和编程助手模型在「更多」里，不确定就留空。</p>
       </article>
       <article class="path path-b" id="path-b">
         <p class="path-tag">B · 更省事</p>
         <h3>支持「智能路由 + 一键导入」的站点</h3>
-        <p>智能 Key 会自动挑选可用的模型线路，一键导入把文本、图片、视频和编程助手的配置一次带进软件。</p>
+        <p>智能 Key 会自动挑选可用的模型线路，一键导入把文本、生图、视频和编程助手的配置一次带进软件。</p>
         <ol class="numbered">
           <li>在站点注册并充值。</li>
           <li>在「令牌 / API Key」页创建一个 <b>智能 Key</b>（有的站点叫“智能路由”或“自动选择模型”）。</li>
@@ -260,7 +264,11 @@
             <a class="btn btn-ghost" id="partner-tokens" href="#" target="_blank" rel="noopener" hidden>打开令牌页</a>
           </div>
         </div>
-        <p class="fine">确认之前不会改动任何设置；导错了可以在「设置 → 连接配置」里撤销上次导入。</p>
+        <figure class="shot shot-sm">
+          <img src="assets/img/shot-import.webp" width="1280" height="771" loading="lazy" decoding="async" alt="软件里的导入确认窗口：显示来源站点、Key 末尾几位和各类默认模型，点「导入」才会生效（示例数据）">
+          <figcaption>导入确认窗口：核对来源和模型后点「导入」。示例数据。</figcaption>
+        </figure>
+        <p class="fine">确认之前不会改动任何设置；导错了可以在「配置 → 连接」里撤销上次导入。</p>
       </article>
     </div>
     <p class="center manuals">完整图文步骤见 <a data-cfg-href="product.manual_general" href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E9%80%9A%E7%94%A8%E7%89%88%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener">通用版使用手册</a> 和 <a data-cfg-href="product.manual_smart" href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E7%AC%AC%E4%B8%89%E6%96%B9%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1%E7%AB%99%E7%82%B9%E6%8E%A5%E5%85%A5%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener">智能路由站点接入手册</a>。</p>
@@ -274,23 +282,14 @@
       <h2 id="videos-title">看一遍，跟着做。</h2>
     </div>
     <div class="video-grid" id="video-grid">
-      <article class="video-card" data-video="general">
-        <button class="video-poster" type="button" aria-label="播放：通用版入门">
+      <article class="video-card" data-video="tutorial">
+        <button class="video-poster" type="button" aria-label="即将上线：新手教程">
           <img src="assets/img/video-general.webp" width="1280" height="720" loading="lazy" decoding="async" alt="">
           <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
           <span class="soon">即将上线</span>
         </button>
-        <h3>通用版入门</h3>
-        <p>下载安装、在任意 new-api 站点创建三个 Key、手动配置文本 / 图片 / 视频，做出第一件作品。</p>
-      </article>
-      <article class="video-card" data-video="smart">
-        <button class="video-poster" type="button" aria-label="播放：第三方智能路由站点接入">
-          <img src="assets/img/video-smart.webp" width="1280" height="720" loading="lazy" decoding="async" alt="">
-          <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
-          <span class="soon">即将上线</span>
-        </button>
-        <h3>第三方智能路由站点接入</h3>
-        <p>在支持智能路由的站点创建智能 Key，一键导入到软件，模型自动选好。</p>
+        <h3>新手教程：从下载到第一件作品</h3>
+        <p>一条视频讲完：下载安装、准备 Key、连接站点（手动添加或一键导入）、做出第一张图和第一条视频，再到更新与卸载。按章节跳着看。</p>
       </article>
       <article class="video-card" data-video="promo">
         <button class="video-poster" type="button" aria-label="播放：宣传片">
@@ -322,7 +321,7 @@
       </details>
       <details>
         <summary>安装版和免安装版（Windows）选哪个？</summary>
-        <p>推荐安装版：有桌面快捷方式和开始菜单，网站上的「一键导入」可以直接唤起软件，支持应用内一键更新。免安装版适合不想安装或放在 U 盘里用，第一次启动要先解压，会慢一点。</p>
+        <p>推荐安装版：有桌面快捷方式和开始菜单，网站上的「一键导入」可以直接唤起软件。免安装版适合不想安装或放在 U 盘里用，第一次启动要先解压，会慢一点。两种都能在软件里直接更新。</p>
       </details>
       <details>
         <summary>怎么确认下载的文件完整？</summary>
@@ -355,25 +354,30 @@
         <p class="fine">安装不需要管理员权限，一路「下一步」即可。</p>
       </article>
       <article class="guide" id="mac">
-        <h3><span class="os-dot mac" aria-hidden="true"></span>Mac 提示“无法打开”或“已损坏”？</h3>
-        <p>内测版没有经过苹果公证，第一次打开需要手动放行：</p>
+        <h3><span class="os-dot mac" aria-hidden="true"></span>Mac 首次打开：提示“无法打开”或“已损坏”？</h3>
+        <p>内测版没有经过苹果公证，第一次打开需要手动放行（需要 macOS 13 或更高）：</p>
         <ol class="numbered">
-          <li>双击 .dmg，把「万能创作终端」拖进「应用程序」。</li>
-          <li>打开「应用程序」文件夹，<b>右键（或按住 Control 点按）</b>软件图标 →「打开」→ 再点「打开」。</li>
-          <li>如果提示“已损坏，无法打开”，打开「终端」，粘贴下面这行并回车，然后再打开软件：</li>
+          <li>双击 .dmg，把「OmniCreator」拖进「应用程序」。</li>
+          <li><b>macOS 13 / 14</b>：在「应用程序」里<b>右键（或按住 Control 点按）</b>OmniCreator →「打开」→ 再点「打开」。</li>
+          <li><b>macOS 15 及以上</b>：先双击打开一次，提示时点「完成」；再打开「系统设置 → 隐私与安全性」，在底部点「仍要打开」，输入密码确认。</li>
+          <li>如果提示“已损坏，无法打开”，打开「终端」，粘贴下面这行并回车（会要求输入登录密码，输入时不显示），然后再打开软件：</li>
         </ol>
-        <div class="code-line"><code id="xattr-cmd">xattr -dr com.apple.quarantine "/Applications/万能创作终端.app"</code><button class="copy-mini" type="button" data-copy-from="xattr-cmd">复制</button></div>
-        <p class="fine">macOS 15 及以上：也可以在「系统设置 → 隐私与安全性」底部点「仍要打开」。</p>
+        <div class="code-line"><code id="xattr-cmd">sudo xattr -dr com.apple.quarantine /Applications/OmniCreator.app</code><button class="copy-mini" type="button" data-copy-from="xattr-cmd">复制</button></div>
+        <p class="fine">软件装好后的名字是「OmniCreator」，打开后窗口里显示「万能创作终端」。Mac 版不自带 Codex，需要时在「配置 → 智能体内核」点「一键安装 Codex」。.dmg 打不开时，可以在 GitHub 发布页下载同名的 .zip，解压后把 OmniCreator 拖进「应用程序」。</p>
       </article>
       <article class="guide" id="update">
         <h3><span class="os-dot up" aria-hidden="true"></span>自动更新：提醒你，但不强迫你</h3>
         <ul class="ticks">
-          <li>软件启动后会在后台检查有没有新版本。</li>
-          <li>有新版时只弹一个提示，写清楚更新了什么；点「一键更新」即可，下载完成后重启生效。</li>
-          <li><b>从不强制更新。</b>可以点「以后再说」，或在设置里关掉自动检查。</li>
-          <li>更新不会动你的作品、对话和连接配置。</li>
-          <li>免安装版和 Mac 版如果无法自动替换，会带你到下载页手动下载新版本覆盖即可。</li>
+          <li>启动 1 分钟后检查一次新版本，之后每 6 小时检查一次。</li>
+          <li>有新版时窗口左下角出现提示，写清楚版本和更新内容，有三个按钮：<b>立即更新</b>、<b>稍后</b>、<b>跳过此版本</b>。</li>
+          <li>点「立即更新」：下载中断会接着下，下载完校验 SHA256，自动安装并重启。</li>
+          <li><b>从不强制更新。</b>「配置 → 关于」里可以手动「检查更新」，也可以取消「自动检查更新（每 6 小时）」。</li>
+          <li>更新会保留全部设置和对话。</li>
         </ul>
+        <figure class="shot shot-sm">
+          <img src="assets/img/shot-update.webp" width="1280" height="771" loading="lazy" decoding="async" alt="配置 → 关于的「更新」一栏发现新版本，左下角是新版本提示，有「跳过此版本」「稍后」「立即更新」按钮（演示用更新源截图）">
+          <figcaption>新版本提示和「配置 → 关于」里的更新设置。截图用的是演示更新源。</figcaption>
+        </figure>
       </article>
       <article class="guide" id="uninstall">
         <h3><span class="os-dot del" aria-hidden="true"></span>怎么卸载？</h3>
@@ -384,24 +388,24 @@
         </div>
         <div class="tab-panel" role="tabpanel" id="up-win" aria-labelledby="ut-win">
           <ol class="numbered">
-            <li>打开 Windows「设置 → 应用」，找到「万能创作终端」，点「卸载」。</li>
-            <li>或在软件里打开「设置 → 关于」，点「卸载」。</li>
-            <li>想连设置和缓存一起删掉：卸载前先在「设置 → 关于」点「清理数据」。</li>
+            <li>在软件里打开「配置 → 关于」，点「卸载本软件」；或打开 Windows「设置 → 应用」，找到「万能创作终端」，点「卸载」。</li>
+            <li>卸载程序会先关掉软件和它启动的后台进程，不会留下删不掉的文件。</li>
+            <li>接着询问是否同时删除你的数据（设置、对话、作品库和下载的工具），<b>默认保留</b>。想彻底删干净就选「是」。</li>
           </ol>
         </div>
         <div class="tab-panel" role="tabpanel" id="up-portable" aria-labelledby="ut-portable" hidden>
           <ol class="numbered">
-            <li>打开软件「设置 → 关于」，点「清理数据」，删除软件保存的设置、Key 和缓存。</li>
-            <li>关闭软件，直接删除免安装版的 .exe 文件。</li>
+            <li>想删除数据：打开软件「配置 → 关于」，点「清除软件数据」（连接配置和 Key、对话、作品库和下载的工具都会删除，不能恢复）。</li>
+            <li>删除免安装版的 .exe 文件即可。</li>
           </ol>
         </div>
         <div class="tab-panel" role="tabpanel" id="up-mac" aria-labelledby="ut-mac" hidden>
           <ol class="numbered">
-            <li>退出软件，在「应用程序」里把「万能创作终端」拖到废纸篓。</li>
-            <li>想彻底清理：在访达按 <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>，依次前往并删除：<br><code>~/Library/Application Support/万能创作终端</code><br><code>~/Library/Logs/万能创作终端</code></li>
+            <li>退出软件，在「应用程序」里把「OmniCreator」拖到废纸篓。</li>
+            <li>想彻底清理：在访达按 <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>，前往并删除：<br><code>~/Library/Application Support/万能创作终端</code></li>
           </ol>
         </div>
-        <p class="fine">卸载不会删除你自己的作品文件夹。数据文件夹的准确位置可在「设置 → 关于 → 数据目录」查看。</p>
+        <p class="fine">数据文件夹的准确位置可在「配置 → 关于 → 数据目录」查看。</p>
       </article>
     </div>
   </div>
@@ -416,12 +420,13 @@
     <div class="faq-list">
       <details><summary>软件要花钱吗？</summary><p>下载、安装和个人使用软件都不收费。对话、写文案、出图、出视频会调用你所连接站点的模型，按站点的实际用量计费。软件里的「账本与上限」能看到花费，还能给单个对话、每天、每月设上限，到了就自动停。</p></details>
       <details><summary>我没有 API 站点，怎么办？</summary><p>任何兼容 OpenAI 接口的站点都可以，常见的是基于 new-api 搭建的站点。注册、充值、创建 Key 后，按「连接站点」里的 A 方法手动配置即可。如果站点支持智能路由和一键导入，用 B 方法更省事。</p></details>
-      <details><summary>为什么要三个 Key（文本 / 图片 / 视频）？</summary><p>文本、图片、视频通常是不同的模型，分开配置更清楚：哪个模型干哪件事、各自花了多少钱一目了然。如果你的一个 Key 能用所有模型，三处填同一个也可以。</p></details>
-      <details><summary>要先装 Codex、Claude Code 或 Node.js 吗？</summary><p>不用提前装。Windows 安装版自带 Codex；缺少时到「设置 → 智能体内核」点「一键安装」，装在软件自己的文件夹里，不会改动你电脑上原有的 Codex / Claude 配置。</p></details>
+      <details><summary>要建几个 Key？文本 / 生图 / 视频要分开吗？</summary><p>一般一个 Key 就够，软件里填一次，文本、生图、视频共用。站点把它们分在不同分组，或你想分开看花费时，可以多建几个，在连接表单里给那一项点「单独设置」，填它自己的 Key（和接口地址）。</p></details>
+      <details><summary>要先装 Codex、Claude Code 或 Node.js 吗？</summary><p>不用提前装。Windows 安装版自带 Codex；免安装版和 Mac 版缺少时，到「配置 → 智能体内核」点「一键安装 Codex」，装在软件自己的文件夹里，不会改动你电脑上原有的 Codex / Claude 配置。</p></details>
+      <details><summary>会强制更新吗？更新会丢设置吗？</summary><p>不会强制。有新版时左下角提示，可以「立即更新」「稍后」或「跳过此版本」。更新会保留全部设置和对话。</p></details>
       <details><summary>Key 安全吗？</summary><p>Key 用系统自带的加密保存在你的电脑上，不会上传。也不要把 Key 发给任何人，包括软件里的 AI 助手。</p></details>
-      <details><summary>「一键导入」点了没反应？</summary><p>常见于免安装版或浏览器拦截。在站点弹窗里复制导入码，回到软件按 Ctrl+V（Mac 上 ⌘+V）；或者下载导入文件，在「设置 → 连接配置」里点「打开导入文件」。导入链接通常 10 分钟内有效、只能用一次，过期了回站点再点一次。</p></details>
+      <details><summary>「一键导入」点了没反应？</summary><p>常见于免安装版或浏览器拦截。在站点弹窗里复制导入码，回到软件按 Ctrl+V（Mac 上 ⌘+V）；或者下载导入文件，在「配置 → 连接」里点「打开导入文件」。导入链接通常 10 分钟内有效、只能用一次，过期了回站点再点一次。</p></details>
       <details><summary>生成的作品保存在哪里？</summary><p>每个对话有自己的成果文件夹。成果会出现在对话下方和右侧「作品」栏，点开大图可以「在文件夹中显示」。全部对话在「会话」页。</p></details>
-      <details><summary>遇到不会的怎么办？</summary><p>在软件里按 F1 打开帮助，直接问「第一次用怎么开始」「生成的作品在哪」。也可以加 QQ 群 <span data-cfg="community.qq_group">1131210592</span> 提问，或到 <a data-cfg-href="product.issues" href="https://github.com/ginsonko/omnicreator/issues" target="_blank" rel="noopener">GitHub Issues</a> 反馈（附上截图和「设置 → 关于」里的版本号）。</p></details>
+      <details><summary>遇到不会的怎么办？</summary><p>在软件里按 F1 打开帮助，直接问「第一次用怎么开始」「生成的作品在哪」。也可以加 QQ 群 <span data-cfg="community.qq_group">1131210592</span> 提问，或到 <a data-cfg-href="product.issues" href="https://github.com/ginsonko/omnicreator/issues" target="_blank" rel="noopener">GitHub Issues</a> 反馈（附上截图和「配置 → 关于」里的版本号）。</p></details>
     </div>
   </div>
 </section>
@@ -430,10 +435,10 @@
   <div class="wrap community">
     <article class="license">
       <p class="eyebrow">使用许可</p>
-      <h2 id="community-title">个人免费使用。</h2>
+      <h2 id="community-title">个人使用免费。</h2>
       <ul class="ticks">
         <li><b>个人</b>：免费下载、免费使用。</li>
-        <li><b>企业、学校等机构</b>使用需获得授权，请联系 <span data-cfg="community.license_contact">QQ 群 1131210592</span>。</li>
+        <li><b>公司、学校等机构</b>使用需获得授权，请联系 <span data-cfg="community.license_contact">QQ 群 1131210592</span>。</li>
         <li>通过软件生成的作品，请遵守所用模型站点的服务条款和法律法规。</li>
       </ul>
     </article>
@@ -474,6 +479,7 @@
   <div class="vd-in">
     <div class="vd-head"><h2 id="vd-title">教程视频</h2><button class="icon-btn" id="vd-close" type="button" aria-label="关闭视频"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="vd-stage" id="vd-stage"></div>
+    <div id="vd-chapters"></div>
     <p class="vd-foot" id="vd-foot"></p>
   </div>
 </dialog>

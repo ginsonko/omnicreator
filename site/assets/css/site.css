@@ -179,6 +179,9 @@ p { margin: 0 0 1em; }
 
 .showcase { display: grid; grid-template-columns: 1.4fr 1fr; gap: 36px; align-items: center; margin-top: 56px; }
 .shot { margin: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow), 0 30px 60px -30px rgba(20, 20, 60, .5); background: #121522; }
+.shot img { display: block; width: 100%; height: auto; }
+.shot-sm { margin: 4px 0 14px; border-radius: 12px; box-shadow: var(--shadow); }
+.shot-sm figcaption { font-size: 13px; color: #c9cce6; padding: 8px 12px; background: #121522; }
 .showcase-copy h3 { font-size: 24px; }
 .showcase-copy p { color: var(--muted); }
 .faces { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 8px; }
@@ -210,7 +213,17 @@ p { margin: 0 0 1em; }
 .manuals { margin-top: 28px; color: var(--muted); }
 
 /* videos */
-.video-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.video-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px; align-items: start; }
+.chapters { margin-top: 6px; }
+.ch-head { font-size: 13px; font-weight: 700; color: var(--muted); margin: 0 0 6px; }
+.ch-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ch-list button { width: 100%; display: flex; gap: 10px; align-items: baseline; text-align: left; font: 14px var(--font); color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; cursor: pointer; }
+.ch-list button:hover { border-color: var(--brand); }
+.ch-list button.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, var(--surface)); }
+.ch-t { font-variant-numeric: tabular-nums; color: var(--brand-ink); font-weight: 700; min-width: 2.6em; }
+.video-card:not(.ready) .ch-list button { cursor: default; }
+.video-card:not(.ready) .ch-list button:hover { border-color: var(--line); }
+.vd-ch { padding: 12px 18px 0; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); max-height: 30vh; overflow: auto; }
 .video-card h3 { font-size: 18px; margin-top: 14px; }
 .video-card p { color: var(--muted); font-size: 15px; }
 .video-poster { position: relative; display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; cursor: pointer; background: #222; aspect-ratio: 16 / 9; box-shadow: var(--shadow); }
@@ -315,7 +328,7 @@ dialog::backdrop { background: rgba(8, 10, 24, .72); backdrop-filter: blur(4px);
   .hero-visual { min-height: 0; max-width: 560px; }
   .showcase, .paths, .guide-grid, .faq-in, .community, .dl-help { grid-template-columns: 1fr; }
   .hero-points { grid-template-columns: repeat(2, 1fr); }
-  .video-grid { grid-template-columns: 1fr 1fr; }
+  .video-grid { grid-template-columns: 1fr; }
   .faq-in { gap: 8px; }
 }
 @media (max-width: 640px) {
@@ -329,7 +342,7 @@ dialog::backdrop { background: rgba(8, 10, 24, .72); backdrop-filter: blur(4px);
   .mock { margin-top: 92px; }
   .mock-body { grid-template-columns: 1fr; }
   .mock-side { display: none; }
-  .feature-grid, .steps, .video-grid, .dl-grid { grid-template-columns: 1fr; }
+  .feature-grid, .steps, .video-grid, .dl-grid, .ch-list { grid-template-columns: 1fr; }
   .step::after { display: none; }
   .section { padding: 64px 0; }
   .qq { flex-direction: column; }

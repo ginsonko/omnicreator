@@ -14,20 +14,21 @@ window.__OC_CONFIG_FALLBACK__ = {
   "release": {
     "version": "0.1.5",
     "channel": "内测版",
-    "date": "TODO",
+    "date": "2026-10-20",
     "release_page": "https://github.com/ginsonko/omnicreator/releases/tag/v0.1.5",
     "mirror_note": "",
     "assets": {
       "win_setup": {
         "label": "Windows 安装版",
-        "note": "推荐。桌面快捷方式与开始菜单，网站「一键导入」可直接唤起软件，支持应用内一键更新。",
+        "note": "推荐。桌面快捷方式与开始菜单，网站「一键导入」可直接唤起软件，有新版本时在软件里点「立即更新」即可。",
         "os": "windows",
         "arch": "x64",
         "file": "OmniCreator-Neutral-0.1.5-Setup.exe",
         "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-Setup.exe",
         "mirror": "",
-        "size": "TODO",
-        "sha256": "TODO"
+        "size": "285.0 MB",
+        "bytes": 298857635,
+        "sha256": "707b876679b785012b67c1916640092fe0ab1b15a20b6727744df9bb654cd1c9"
       },
       "win_portable": {
         "label": "Windows 免安装版",
@@ -37,51 +38,75 @@ window.__OC_CONFIG_FALLBACK__ = {
         "file": "OmniCreator-Neutral-0.1.5-Portable.exe",
         "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-Portable.exe",
         "mirror": "",
-        "size": "TODO",
-        "sha256": "TODO"
+        "size": "171.8 MB",
+        "bytes": 180117064,
+        "sha256": "b223cb5b8a57d01211911d427ff7f074ee273fa18627eb74f83a211e2e4b5348"
       },
       "mac_arm64": {
         "label": "macOS Apple 芯片版",
-        "note": "M1 / M2 / M3 / M4 等 Apple 芯片的 Mac。",
+        "note": "M1 / M2 / M3 / M4 等 Apple 芯片的 Mac，需要 macOS 13 及以上。第一次打开要手动放行，见下方「Mac 首次打开」。",
         "os": "mac",
         "arch": "arm64",
         "file": "OmniCreator-Neutral-0.1.5-mac-arm64.dmg",
         "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-mac-arm64.dmg",
         "mirror": "",
-        "size": "TODO",
-        "sha256": "TODO"
+        "size": "206.1 MB",
+        "bytes": 216084672,
+        "sha256": "34c0fa8b2198075a158242b122fdda01c72d612b5d82234181695268d11a490f"
       },
       "mac_x64": {
         "label": "macOS Intel 版",
-        "note": "2020 年及更早、使用 Intel 处理器的 Mac。",
+        "note": "使用 Intel 处理器的 Mac，需要 macOS 13 及以上。第一次打开要手动放行，见下方「Mac 首次打开」。",
         "os": "mac",
         "arch": "x64",
         "file": "OmniCreator-Neutral-0.1.5-mac-x64.dmg",
         "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-mac-x64.dmg",
         "mirror": "",
-        "size": "TODO",
-        "sha256": "TODO"
+        "size": "225.0 MB",
+        "bytes": 235954954,
+        "sha256": "6010dfc4e28fb6188506ad4f30ed847d15d2ae29d56529b0c58c058f7f0ff338"
       }
     }
   },
   "videos": [
     {
-      "id": "general",
-      "title": "通用版入门",
-      "desc": "下载安装、在任意 new-api 站点创建三个 Key、手动配置文本 / 图片 / 视频，做出第一件作品。",
+      "id": "tutorial",
+      "title": "新手教程：从下载到第一件作品",
+      "desc": "一条视频讲完：下载安装、准备 Key、连接站点（手动添加或一键导入）、做出第一张图和第一条视频，再到更新与卸载。按章节跳着看。",
       "duration": "",
       "poster": "assets/img/video-general.webp",
       "url": "",
-      "embed": ""
-    },
-    {
-      "id": "smart",
-      "title": "第三方智能路由站点接入",
-      "desc": "在支持智能路由的站点创建智能 Key，一键导入到软件，模型自动选好。",
-      "duration": "",
-      "poster": "assets/img/video-smart.webp",
-      "url": "",
-      "embed": ""
+      "embed": "",
+      "chapters": [
+        {
+          "start": "",
+          "title": "下载与安装（Windows / Mac 首次打开）"
+        },
+        {
+          "start": "",
+          "title": "在 API 站点注册、充值、创建 Key"
+        },
+        {
+          "start": "",
+          "title": "手动添加连接：文本 / 生图 / 视频"
+        },
+        {
+          "start": "",
+          "title": "智能路由站点：一键导入"
+        },
+        {
+          "start": "",
+          "title": "第一件作品：文案、图片、视频"
+        },
+        {
+          "start": "",
+          "title": "创作台、工作室与换界面"
+        },
+        {
+          "start": "",
+          "title": "更新与卸载"
+        }
+      ]
     },
     {
       "id": "promo",

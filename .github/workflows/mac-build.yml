@@ -124,6 +124,11 @@ jobs:
             find "$app/Contents/Resources/ffmpeg" -type f \( -name ffmpeg -o -name ffprobe \)
             find "$app/Contents/Resources/app/node_modules" -type f \( -name '*.node' -o -name '*.dylib' \)
           )
+          echo "--- Info.plist ---"
+          plist="$app/Contents/Info.plist"
+          echo "LSMinimumSystemVersion: $(plutil -extract LSMinimumSystemVersion raw "$plist" 2>/dev/null || echo unset)"
+          echo "URL schemes: $(plutil -extract CFBundleURLTypes json -o - "$plist" 2>/dev/null || echo none)"
+          echo "document types: $(plutil -extract CFBundleDocumentTypes json -o - "$plist" 2>/dev/null || echo none)"
           echo "--- signature ---"
           codesign -dv "$app" 2>&1 | grep -E 'Identifier|Signature|Format' || true
           if codesign --verify --deep --strict "$app"; then echo "codesign verify: ok"; else echo "::warning::codesign verify failed"; fi

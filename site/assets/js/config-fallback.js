@@ -111,10 +111,12 @@ window.__OC_CONFIG_FALLBACK__ = {
     {
       "id": "promo",
       "title": "宣传片",
-      "desc": "两分钟看懂万能创作终端能做什么。",
+      "desc": "80 秒看懂万能创作终端能做什么：一句话出图、出视频、剪成片，接任何兼容 OpenAI 的站点。手机竖着看会自动播放竖屏版。",
       "duration": "",
       "poster": "assets/img/video-promo.webp",
       "url": "",
+      "url_portrait": "",
+      "poster_portrait": "",
       "embed": ""
     }
   ],

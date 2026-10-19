@@ -224,7 +224,7 @@
       if (v.desc) p.textContent = v.desc;
       var poster = safeUrl(v.poster);
       if (poster) img.setAttribute('src', poster);
-      var url = safeUrl(v.url), embed = safeUrl(v.embed);
+      var url = safeUrl(v.url), embed = safeUrl(v.embed), urlPortrait = safeUrl(v.url_portrait);
       var ready = !!(url || embed);
       var external = ready && !embed && !/\.(mp4|webm|m3u8)(\?|#|$)/i.test(url);
       btn.setAttribute('aria-label', (ready ? '播放：' : '即将上线：') + (v.title || ''));
@@ -232,9 +232,19 @@
       var play = function (sec) {
         if (!ready) { toast('视频正在制作中，上线后会放在这里'); return; }
         if (external) { window.open(url, '_blank', 'noopener'); return; }
-        openVideo(v, embed, url, sec || 0);
+        // Phones held upright get the vertical cut when the config has one.
+        var portrait = !embed && !!urlPortrait && portraitScreen();
+        openVideo(v, embed, portrait ? urlPortrait : url, sec || 0, portrait);
       };
       btn.onclick = function () { play(0); };
+      if (v.id === 'promo' && ready) {
+        var hp = $('#hero-promo');
+        if (hp) {
+          if (v.duration) $('small', hp).textContent = v.duration;
+          hp.hidden = false;
+          hp.onclick = function () { play(0); };
+        }
+      }
       var old = $('.chapters', card);
       if (old) old.parentNode.removeChild(old);
       var chs = chaptersOf(v);
@@ -244,6 +254,14 @@
         card.appendChild(box);
       }
     });
+    // A published video takes the large first column while the other slot still says 即将上线.
+    var grid = $('#video-grid');
+    if (grid) {
+      var cards = $$('[data-video]', grid);
+      cards.filter(function (c) { return c.classList.contains('ready'); })
+        .concat(cards.filter(function (c) { return !c.classList.contains('ready'); }))
+        .forEach(function (c) { grid.appendChild(c); });
+    }
   }
 
   // Embedded players cannot be seeked from outside, so a chapter jump reloads the iframe with a start time.
@@ -253,10 +271,15 @@
     return u + (u.indexOf('?') === -1 ? '?' : '&') + 't=' + Math.floor(sec) + '&start=' + Math.floor(sec);
   }
 
-  function openVideo(v, embed, url, sec) {
+  function portraitScreen() {
+    return !!(window.matchMedia && matchMedia('(max-width: 760px) and (orientation: portrait)').matches);
+  }
+
+  function openVideo(v, embed, url, sec, portrait) {
     var d = $('#video-dialog'), stage = $('#vd-stage'), chBox = $('#vd-chapters');
     var title = v.title || '教程视频';
     $('#vd-title').textContent = title;
+    d.classList.toggle('portrait', !!portrait);
     stage.textContent = '';
     chBox.textContent = '';
     var media = null;

@@ -129,7 +129,7 @@ function checkLinks() {
   const manifest = path.join(SITE, 'site.webmanifest');
   if (fs.existsSync(manifest)) for (const i of JSON.parse(fs.readFileSync(manifest, 'utf8')).icons || []) check(manifest, i.src);
   const cfg = JSON.parse(fs.readFileSync(CONFIG, 'utf8'));
-  for (const v of cfg.videos || []) check(CONFIG, v.poster);
+  for (const v of cfg.videos || []) for (const p of [v.poster, v.poster_portrait]) if (p) check(CONFIG, p);
   if (cfg.partner && cfg.partner.logo && !/^https?:/i.test(cfg.partner.logo)) check(CONFIG, cfg.partner.logo);
   if (!failures) ok(`${count} local references resolve`);
 }
@@ -196,6 +196,9 @@ export function validateConfig(cfg) {
       str(v.poster, `${b}.poster`, { url: true });
       str(v.url, `${b}.url`, { required: false, url: true });
       str(v.embed, `${b}.embed`, { required: false, url: true });
+      str(v.url_portrait, `${b}.url_portrait`, { required: false, url: true });
+      str(v.poster_portrait, `${b}.poster_portrait`, { required: false, url: true });
+      if (v.url_portrait && !(v.url && v.url.trim())) errs.push(`${b}.url_portrait needs url (the 16:9 file) as well`);
       if (v.chapters === undefined) return;
       if (!Array.isArray(v.chapters)) return errs.push(`${b}.chapters must be an array`);
       const live = !!((v.url && v.url.trim()) || (v.embed && v.embed.trim()));

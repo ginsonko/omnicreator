@@ -61,6 +61,7 @@ omnicreator-site-<版本号>/
 | `release.assets.*.mirror` | 如果你在自己的服务器或对象存储上提供安装包镜像，填镜像下载地址，卡片上会出现「国内镜像」按钮。**请保证文件与 GitHub 发布的完全一致**（可用页面上的 SHA256 核对） |
 | `release.mirror_note` | 「GitHub 下载很慢？」里显示的文字，可以写你的镜像说明 |
 | `videos[].url` / `videos[].embed` | 教程视频链接。`url` 填视频页面（新窗口打开）或 mp4 地址（页面内播放）；`embed` 填播放器嵌入地址。官方视频上线后会随站点包更新，一般不用改 |
+| `videos[].url_portrait` / `videos[].poster_portrait` | 可选：竖屏版 mp4 与竖屏封面。手机竖着看时播放竖屏版，其他情况播放 `url` |
 | `videos[].chapters[].start` | 新手教程的章节开始时间（`m:ss`）。填了视频地址后每一章都要有时间，点章节会跳到那里 |
 
 ### 3. 请不要修改

@@ -1,0 +1,41 @@
+{
+  "schema": "omni-update/1",
+  "edition": "neutral",
+  "version": "0.1.5",
+  "date": "2026-10-20",
+  "notes": "0.1.5：新增 Mac 版（Apple 芯片 / Intel）；自动检查更新（不强制，可稍后或跳过）；卸载前自动关闭后台进程、可选删除数据，设置 → 关于新增「卸载」「清理数据」；新图标；口袋风格底栏固定一行。个人使用免费，公司、学校等机构使用需获得授权。",
+  "assets": {
+    "win-nsis": {
+      "name": "OmniCreator-Neutral-0.1.5-Setup.exe",
+      "urls": [
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-Setup.exe"
+      ],
+      "size": 298857635,
+      "sha256": "707b876679b785012b67c1916640092fe0ab1b15a20b6727744df9bb654cd1c9"
+    },
+    "win-portable": {
+      "name": "OmniCreator-Neutral-0.1.5-Portable.exe",
+      "urls": [
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-Portable.exe"
+      ],
+      "size": 180117064,
+      "sha256": "b223cb5b8a57d01211911d427ff7f074ee273fa18627eb74f83a211e2e4b5348"
+    },
+    "mac-arm64": {
+      "name": "OmniCreator-Neutral-0.1.5-mac-arm64.zip",
+      "urls": [
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-mac-arm64.zip"
+      ],
+      "size": 213392247,
+      "sha256": "7553360e89827cc88d486737d2fedbcc0af7546e942005c26ea29ca553bd2db3"
+    },
+    "mac-x64": {
+      "name": "OmniCreator-Neutral-0.1.5-mac-x64.zip",
+      "urls": [
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.5/OmniCreator-Neutral-0.1.5-mac-x64.zip"
+      ],
+      "size": 233335841,
+      "sha256": "59b565a4119ca851559f23f132868417d17125e2fe259928bc4e98dffea52ea7"
+    }
+  }
+}

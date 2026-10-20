@@ -1,41 +1,45 @@
 {
   "schema": "omni-update/1",
   "edition": "neutral",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "date": "2026-10-20",
-  "notes": "0.1.6：思考等级：输入框里可选 默认 / 低 / 中 / 高 / 超高 / 最高；速度模式（高级；引导 / 排队：AI 工作时可以把新消息马上交给它（引导）；技能与工具：「配置 → 技能与工具」管理 Codex 和 Claude Code 的技能和 MCP 工具服务器；窄窗口下输入框和标题栏排版修复。",
+  "notes": "0.1.7：会话搬家支持更多软件；文字多的图片更准；回复里的链接都能点；发的图片有缩略图；会话右键菜单；生图尺寸自动对齐；花费估算更准，自动对账；检查更新更可靠；策划失败说清原因；命令退出码不再显示成红色错误。",
   "assets": {
     "win-nsis": {
-      "name": "OmniCreator-Neutral-0.1.6-Setup.exe",
+      "name": "OmniCreator-Neutral-0.1.7-Setup.exe",
       "urls": [
-        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.6/OmniCreator-Neutral-0.1.6-Setup.exe"
+        "https://gh-proxy.org/https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-Setup.exe",
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-Setup.exe"
       ],
-      "size": 298922170,
-      "sha256": "615be8096bda24251a631c52e2e3c09d9e4aaa23ce645584db5c2ebcf79b92b7"
+      "size": 298946916,
+      "sha256": "7d95e9d96732d2fa8a22395767852dcf5e148973d9f11e5b5ed70af06fec4ac2"
     },
     "win-portable": {
-      "name": "OmniCreator-Neutral-0.1.6-Portable.exe",
+      "name": "OmniCreator-Neutral-0.1.7-Portable.exe",
       "urls": [
-        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.6/OmniCreator-Neutral-0.1.6-Portable.exe"
+        "https://gh-proxy.org/https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-Portable.exe",
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-Portable.exe"
       ],
-      "size": 180176656,
-      "sha256": "0f3a1aa3619a022b477b769457dd7a4b338debd6a78fbb688e9d8f599fda8cd8"
+      "size": 180186961,
+      "sha256": "672602f5254e334ff0c0da998496241f7ef39bb8ea8070c096bee39f73abc2b0"
     },
     "mac-arm64": {
-      "name": "OmniCreator-Neutral-0.1.6-mac-arm64.zip",
+      "name": "OmniCreator-Neutral-0.1.7-mac-arm64.zip",
       "urls": [
-        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.6/OmniCreator-Neutral-0.1.6-mac-arm64.zip"
+        "https://gh-proxy.org/https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-mac-arm64.zip",
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-mac-arm64.zip"
       ],
-      "size": 213468865,
-      "sha256": "8af4f2526784823a09b01d11f6d6d97ab04bb0580cab94f6badec580abdde5f4"
+      "size": 213497699,
+      "sha256": "a3b48700fc4972f492283ec40b36499bb85758acb878df52a5485d5ce86a6e68"
     },
     "mac-x64": {
-      "name": "OmniCreator-Neutral-0.1.6-mac-x64.zip",
+      "name": "OmniCreator-Neutral-0.1.7-mac-x64.zip",
       "urls": [
-        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.6/OmniCreator-Neutral-0.1.6-mac-x64.zip"
+        "https://gh-proxy.org/https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-mac-x64.zip",
+        "https://github.com/ginsonko/omnicreator/releases/download/v0.1.7/OmniCreator-Neutral-0.1.7-mac-x64.zip"
       ],
-      "size": 233412480,
-      "sha256": "1141db20c77e4c6df74c6811da11d965e8e9978f867fcb0f0e2cb7445c01f88f"
+      "size": 233441306,
+      "sha256": "05fa10facce10443d7dd3067f8984666ec675add4216a00b0276978715cdb74a"
     }
   }
 }

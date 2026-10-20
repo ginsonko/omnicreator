@@ -113,10 +113,10 @@ window.__OC_CONFIG_FALLBACK__ = {
       "title": "宣传片",
       "desc": "80 秒看懂万能创作终端能做什么：一句话出图、出视频、剪成片，接任何兼容 OpenAI 的站点。手机竖着看会自动播放竖屏版。",
       "duration": "1 分 20 秒",
-      "poster": "assets/img/promo-neutral-landscape-d5b5ac44.jpg",
-      "url": "https://github.com/ginsonko/omnicreator/releases/download/media/promo-neutral-landscape-d5b5ac44.mp4",
-      "url_portrait": "https://github.com/ginsonko/omnicreator/releases/download/media/promo-neutral-portrait-f3352aa6.mp4",
-      "poster_portrait": "assets/img/promo-neutral-portrait-f3352aa6.jpg",
+      "poster": "assets/img/promo-neutral-landscape-8f26a002.jpg",
+      "url": "https://github.com/ginsonko/omnicreator/releases/download/media/promo-neutral-landscape-8f26a002.mp4",
+      "url_portrait": "https://github.com/ginsonko/omnicreator/releases/download/media/promo-neutral-portrait-c0693040.mp4",
+      "poster_portrait": "assets/img/promo-neutral-portrait-c0693040.jpg",
       "embed": ""
     }
   ],

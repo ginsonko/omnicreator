@@ -516,7 +516,10 @@ async function checkVideos(browser, base, cfg) {
     await ctx.close();
   };
 
-  await run('pending (no url): chapters listed, no player opens', cfg, [], async (page, card, errors) => {
+  const pending = JSON.parse(JSON.stringify(cfg));
+  const pv = pending.videos.find((x) => x.id === withChapters.id);
+  for (const k of ['url', 'url_portrait', 'embed']) pv[k] = '';
+  await run('pending (no url): chapters listed, no player opens', pending, [], async (page, card, errors) => {
     if (await card.evaluate((c) => c.classList.contains('ready'))) errors.push('card marked ready without a url');
     const count = await card.locator('.ch-list button').count();
     if (count !== n) errors.push(`expected ${n} chapter buttons, got ${count}`);

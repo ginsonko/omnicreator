@@ -12,10 +12,10 @@ window.__OC_CONFIG_FALLBACK__ = {
     "manual_smart": "https://github.com/ginsonko/omnicreator/blob/main/docs/%E7%AC%AC%E4%B8%89%E6%96%B9%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1%E7%AB%99%E7%82%B9%E6%8E%A5%E5%85%A5%E6%89%8B%E5%86%8C.md"
   },
   "release": {
-    "version": "0.3.0",
+    "version": "0.3.1",
     "channel": "内测版",
     "date": "2026-10-23",
-    "release_page": "https://github.com/ginsonko/omnicreator/releases/tag/v0.3.0",
+    "release_page": "https://github.com/ginsonko/omnicreator/releases/tag/v0.3.1",
     "mirror_note": "",
     "assets": {
       "win_setup": {
@@ -23,48 +23,48 @@ window.__OC_CONFIG_FALLBACK__ = {
         "note": "推荐。桌面快捷方式与开始菜单，网站「一键导入」可直接唤起软件，有新版本时在软件里点「立即更新」即可。",
         "os": "windows",
         "arch": "x64",
-        "file": "OmniCreator-Neutral-0.3.0-Setup.exe",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.0/OmniCreator-Neutral-0.3.0-Setup.exe",
+        "file": "OmniCreator-Neutral-0.3.1-Setup.exe",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.1/OmniCreator-Neutral-0.3.1-Setup.exe",
         "mirror": "",
-        "size": "285.3 MB",
-        "bytes": 299171070,
-        "sha256": "374764ca7a39a6f7ff6b3145cc224f59f6a8e1a5333e6febd478f4d0e22bed06"
+        "size": "285.7 MB",
+        "bytes": 299553724,
+        "sha256": "c19ba94a04ee307cb5b0003715eea9b1d43c93e4dc48e1b40f43b8e0d4dc70b7"
       },
       "win_portable": {
         "label": "Windows 免安装版",
         "note": "不想安装时用。放在任意文件夹或 U 盘，双击即用；第一次启动要先解压，会稍慢。",
         "os": "windows",
         "arch": "x64",
-        "file": "OmniCreator-Neutral-0.3.0-Portable.exe",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.0/OmniCreator-Neutral-0.3.0-Portable.exe",
+        "file": "OmniCreator-Neutral-0.3.1-Portable.exe",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.1/OmniCreator-Neutral-0.3.1-Portable.exe",
         "mirror": "",
-        "size": "172.0 MB",
-        "bytes": 180352940,
-        "sha256": "e0aa500ff172a7c66af113849bda9811e1ec63a03406c8f619779e5816da0070"
+        "size": "172.2 MB",
+        "bytes": 180553830,
+        "sha256": "eeb44cfb1888b1a55851600b6aef2fc18942eee4bf5e99ec8af8431464fd5d2e"
       },
       "mac_arm64": {
         "label": "macOS Apple 芯片版",
         "note": "M1 / M2 / M3 / M4 等 Apple 芯片的 Mac，需要 macOS 13 及以上。第一次打开要手动放行，见下方「Mac 首次打开」。",
         "os": "mac",
         "arch": "arm64",
-        "file": "OmniCreator-Neutral-0.3.0-mac-arm64.dmg",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.0/OmniCreator-Neutral-0.3.0-mac-arm64.dmg",
+        "file": "OmniCreator-Neutral-0.3.1-mac-arm64.dmg",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.1/OmniCreator-Neutral-0.3.1-mac-arm64.dmg",
         "mirror": "",
-        "size": "206.4 MB",
-        "bytes": 216436550,
-        "sha256": "c0d67f9783bd3e65fae63cb31460925f236f163bf482d664c8d0789e9b7e3fcf"
+        "size": "206.8 MB",
+        "bytes": 216823753,
+        "sha256": "f0e470272ddf16b1e0189b7421c402e897605edc7deeb167aede69ec593a461f"
       },
       "mac_x64": {
         "label": "macOS Intel 版",
         "note": "使用 Intel 处理器的 Mac，需要 macOS 13 及以上。第一次打开要手动放行，见下方「Mac 首次打开」。",
         "os": "mac",
         "arch": "x64",
-        "file": "OmniCreator-Neutral-0.3.0-mac-x64.dmg",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.0/OmniCreator-Neutral-0.3.0-mac-x64.dmg",
+        "file": "OmniCreator-Neutral-0.3.1-mac-x64.dmg",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.3.1/OmniCreator-Neutral-0.3.1-mac-x64.dmg",
         "mirror": "",
-        "size": "225.3 MB",
-        "bytes": 236254065,
-        "sha256": "467ed1d01c407c5cf2233e39e5efed6ac8047169aae43ecaf9d47e8279c85612"
+        "size": "225.7 MB",
+        "bytes": 236673593,
+        "sha256": "d11b3e67a92db02a5b99d409ab984332a542278dc552d61550d39b2debd8966b"
       }
     }
   },

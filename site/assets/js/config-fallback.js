@@ -12,10 +12,10 @@ window.__OC_CONFIG_FALLBACK__ = {
     "manual_smart": "https://github.com/ginsonko/omnicreator/blob/main/docs/%E7%AC%AC%E4%B8%89%E6%96%B9%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1%E7%AB%99%E7%82%B9%E6%8E%A5%E5%85%A5%E6%89%8B%E5%86%8C.md"
   },
   "release": {
-    "version": "0.6.7",
+    "version": "0.6.8",
     "channel": "内测版",
-    "date": "2026-11-16",
-    "release_page": "https://github.com/ginsonko/omnicreator/releases/tag/v0.6.7",
+    "date": "2026-11-21",
+    "release_page": "https://github.com/ginsonko/omnicreator/releases/tag/v0.6.8",
     "mirror_note": "",
     "assets": {
       "win_setup": {
@@ -23,48 +23,48 @@ window.__OC_CONFIG_FALLBACK__ = {
         "note": "推荐。桌面快捷方式与开始菜单，网站「一键导入」可直接唤起软件，有新版本时在软件里点「立即更新」即可。",
         "os": "windows",
         "arch": "x64",
-        "file": "OmniCreator-Neutral-0.6.7-Setup.exe",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.7/OmniCreator-Neutral-0.6.7-Setup.exe",
+        "file": "OmniCreator-Neutral-0.6.8-Setup.exe",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.8/OmniCreator-Neutral-0.6.8-Setup.exe",
         "mirror": "",
-        "size": "337.4 MB",
-        "bytes": 353783878,
-        "sha256": "c58ad9fb7604e3be99507c8c04fd3e126ce2780edcc98f0fd7de5a79aa82bd58"
+        "size": "371.9 MB",
+        "bytes": 389923081,
+        "sha256": "b75b29bfc40255960731d9d4628e9eddd1163d6fb2892773e222f37a88cf1243"
       },
       "win_portable": {
         "label": "Windows 免安装版",
         "note": "不想安装时用。放在任意文件夹或 U 盘，双击即用；第一次启动要先解压，会稍慢。",
         "os": "windows",
         "arch": "x64",
-        "file": "OmniCreator-Neutral-0.6.7-Portable.exe",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.7/OmniCreator-Neutral-0.6.7-Portable.exe",
+        "file": "OmniCreator-Neutral-0.6.8-Portable.exe",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.8/OmniCreator-Neutral-0.6.8-Portable.exe",
         "mirror": "",
-        "size": "204.6 MB",
-        "bytes": 214572413,
-        "sha256": "3bf36d7fa46d22647afe223d7d7ca04b361fa8f3f5d55790aba75f7b2226853a"
+        "size": "231.3 MB",
+        "bytes": 242483785,
+        "sha256": "240ac2431f2231e3449abe58729d8794054c7ae8307997bc7625b4c67cd9a5d4"
       },
       "mac_arm64": {
         "label": "macOS Apple 芯片版",
         "note": "M1 / M2 / M3 / M4 等 Apple 芯片的 Mac，需要 macOS 13 及以上。第一次打开要手动放行，见下方「Mac 首次打开」。",
         "os": "mac",
         "arch": "arm64",
-        "file": "OmniCreator-Neutral-0.6.7-mac-arm64.dmg",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.7/OmniCreator-Neutral-0.6.7-mac-arm64.dmg",
+        "file": "OmniCreator-Neutral-0.6.8-mac-arm64.dmg",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.8/OmniCreator-Neutral-0.6.8-mac-arm64.dmg",
         "mirror": "",
-        "size": "247.5 MB",
-        "bytes": 259534059,
-        "sha256": "2c2e02333d4e193a5b22894fccde9c13a651e296fb2f7af2e53ff91df66f2e32"
+        "size": "284.5 MB",
+        "bytes": 298319378,
+        "sha256": "ef55d33c9c46df6ea23312828669805ae85e4a7bfcc0d53fc511710e20c7c2c4"
       },
       "mac_x64": {
         "label": "macOS Intel 版",
         "note": "使用 Intel 处理器的 Mac，需要 macOS 13 及以上。第一次打开要手动放行，见下方「Mac 首次打开」。",
         "os": "mac",
         "arch": "x64",
-        "file": "OmniCreator-Neutral-0.6.7-mac-x64.dmg",
-        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.7/OmniCreator-Neutral-0.6.7-mac-x64.dmg",
+        "file": "OmniCreator-Neutral-0.6.8-mac-x64.dmg",
+        "url": "https://github.com/ginsonko/omnicreator/releases/download/v0.6.8/OmniCreator-Neutral-0.6.8-mac-x64.dmg",
         "mirror": "",
-        "size": "266.4 MB",
-        "bytes": 279356543,
-        "sha256": "e5464bcee4bde1605b533faaf5b6ef9ce4736b890173662c575f241a0eaf8b57"
+        "size": "280.3 MB",
+        "bytes": 293931888,
+        "sha256": "df3d2c1571392d7e48231c544622963e9d9a20a99808a1abd2f27d5082d96790"
       }
     }
   },

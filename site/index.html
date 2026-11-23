@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>万能创作终端 OmniCreator · 想做什么，直接说</title>
-  <meta name="description" content="万能创作终端（中性版，原通用版与 TideVerse 版合为一版）：把多内核 AI 对话与漫剧总监、超级导演、制图总监、音乐创作、无限画布、44+ 本机工具装进一个窗口，0.7.0 起支持全软件语音直控与桌面陪伴助手，可连接任意 OpenAI / new-api 兼容站点。"/>
+  <meta name="description" content="万能创作终端 OmniCreator：把五大智能体内核对话与漫剧总监、百集漫剧流水线、超级导演、制图总监、原创音乐、无限画布、批量造物、300+ 款本机免费工具装进一个桌面窗口，支持多智能体 3D 工作室与语音桌面伙伴，可连接任意 OpenAI / new-api 兼容站点。"/>
   <meta property="og:title" content="万能创作终端 OmniCreator · 想做什么，直接说"/>
   <meta property="og:description" content="一个窗口，一整个创作团队。支持 Windows 与 macOS，个人免费使用，自由连接任意兼容 API 站点。"/>
   <meta property="og:image" content="assets/img/og-image.jpg"/>
@@ -70,11 +70,11 @@
     </a>
     <nav id="nav" class="nav" aria-label="主导航" data-i18n-aria-label="a11y.nav">
       <a href="#showcase" data-i18n="nav.wall">作品墙</a>
-      <a href="#steps" data-i18n="nav.start">三步上手</a>
+      <a href="#scenarios" data-i18n="nav.cases">实战场景</a>
+      <a href="#super" data-i18n="nav.super">超级导演</a>
       <a href="#features" data-i18n="nav.features">核心功能</a>
+      <a href="#steps" data-i18n="nav.start">三步上手</a>
       <a href="#connect" class="opt" data-i18n="nav.connect">连接站点</a>
-      <a href="#videos" class="opt" data-i18n="nav.videos">教程视频</a>
-      <a href="#changelog" data-i18n="nav.changelog">0.7.0 更新</a>
       <a href="#download" data-i18n="nav.download">下载</a>
       <a href="#faq" class="opt" data-i18n="nav.faq">常见问题</a>
     </nav>
@@ -116,13 +116,12 @@
     <div class="wrap">
       <div class="hero-copy">
         <div class="hero-tag">
-          <span class="pill hot"><span>v<span data-ver>0.7.0</span></span></span>
-          <span class="pill new" data-i18n="hero.badge_new">新 · 语音直控 × 桌面陪伴助手</span>
-          <span class="pill" data-i18n="hero.badge_merge">通用版 × TideVerse 统一中性版</span>
+          <span class="pill new" data-i18n="hero.badge_new">全能 AI 创作与多智能体工作台</span>
+          <span class="pill" data-i18n="hero.badge_merge">漫剧 · 导演 · 制图 · 音乐 · 300+ 百宝箱</span>
           <span class="pill">Windows · macOS</span>
         </div>
         <h1 data-i18n="hero.h1">想做什么，<em>直接说</em>。<br/>一整个创作团队。</h1>
-        <p class="sub" data-i18n="hero.sub">把 Codex / Claude Code / Devin 多内核对话与全套媒体创作台装进一个桌面软件。漫剧、超级导演、制图、音乐、无限画布、百宝箱全内置，打字或直接开口说都行；登录账号或接入任意 OpenAI / new-api 兼容站点即可开工。</p>
+        <p class="sub" data-i18n="hero.sub">把 Codex / Claude Code / 反重力（Antigravity） / Factory / Devin 五大智能体内核与全套媒体创作台装进一个桌面软件：百集漫剧、超级导演、专业制图、原创音乐、无限画布、批量造物与 300+ 款本机免费百宝箱全内置，支持组建 3D 工作室团队与桌面语音伙伴直控；登录账号或接入任意兼容 API 站点即可开工。</p>
 
         <div id="partner-notice" class="partner-notice" hidden></div>
 
@@ -164,7 +163,7 @@
 
         <div class="hero-points">
           <span data-i18n="hero.p1">支持官方登录或任意 new-api / OpenAI 站点</span>
-          <span data-i18n="hero.p2">12 大创作模块 + 44+ 本机免费工具</span>
+          <span data-i18n="hero.p2">12 大创作模块 + 300+ 本机免费工具</span>
           <span data-i18n="hero.p3">个人使用免费 · 不强制更新</span>
         </div>
       </div>
@@ -174,7 +173,7 @@
           <img class="studio-mascot" src="assets/img/mascot-560.webp" alt="万能创作终端" width="92" height="92"/>
           <div class="studio-bar">
             <div class="studio-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-            <span data-i18n="stage.title">万能创作终端 · 语音直控与多 AI 协作演示</span>
+            <span data-i18n="stage.title">万能创作终端 · 多智能体创作团队实时协作</span>
           </div>
           <!-- 舞台屏幕：真实工作室截图作底，上面叠一层 Canvas 声波光球与智能体轨道；鼠标移动会带动波形，点一下有涟漪 -->
           <div class="stage-screen" id="stage-screen">
@@ -214,7 +213,7 @@
   <section class="strip" aria-label="核心概览" data-i18n-aria-label="a11y.strip">
     <div class="wrap">
       <div class="cell"><b data-i18n="stat.engines_n">12 大模块</b><span data-i18n="stat.engines_l">漫剧 / 导演 / 制图 / 音乐 / 画布</span></div>
-      <div class="cell"><b data-i18n="stat.tools_n">44+ 工具</b><span data-i18n="stat.tools_l">百宝箱本机免扣费直跑</span></div>
+      <div class="cell"><b data-i18n="stat.tools_n">300+ 工具</b><span data-i18n="stat.tools_l">百宝箱本机免扣费直跑</span></div>
       <div class="cell"><b data-i18n="stat.multi_n">多内核接力</b><span data-i18n="stat.multi_l">Codex / Claude / Devin 热切换</span></div>
       <div class="cell"><b data-i18n="stat.free_n">个人免费</b><span data-i18n="stat.free_l">自由接入兼容 API · 零追踪</span></div>
     </div>
@@ -252,7 +251,7 @@
             <li><b>30</b><span data-i18n="wall.n1">件真实作品</span></li>
             <li><b>6</b><span data-i18n="wall.n2">大创作场景</span></li>
             <li><b>10</b><span data-i18n="wall.n3">套千面界面</span></li>
-            <li><b>44+</b><span data-i18n="wall.n4">款本机零费工具</span></li>
+            <li><b>300+</b><span data-i18n="wall.n4">款本机零费工具</span></li>
           </ul>
         </div>
       </div>
@@ -528,7 +527,7 @@
         <div class="head rv">
           <span class="eyebrow" data-i18n="faces.eyebrow">FACES · 千面 10 套界面</span>
           <h2 data-i18n="faces.title">同一个软件，十种用法。</h2>
-          <p class="lead" data-i18n="faces.lead">千面不只是换颜色，而是换一整套布局和操作方式。按 <kbd>F2</kbd> 随时切换，对话、连接和作品全部共用。0.7.0 新增第 10 套「二次元·痛窗」，立绘和布局可以自己定制。</p>
+          <p class="lead" data-i18n="faces.lead">千面不只是换颜色，而是换一整套布局和操作方式。按 <kbd>F2</kbd> 随时在 10 套界面间切换（含可自由定制立绘、四向导航与签语的「二次元·痛窗」），对话、连接和作品全部共用。</p>
         </div>
         <div class="face-ui rv">
           <div id="face-tabs" class="face-tabs" role="tablist" aria-label="千面界面" data-i18n-aria-label="a11y.faces">
@@ -541,7 +540,7 @@
             <button role="tab" type="button" id="ft-console" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="console" data-shot="assets/media/showcase/app/face-console.webp" data-badge="R" data-badge-key="faces.b_console" data-badge-label="键盘优先" data-tag="一行命令搞定一切。" data-how="输入 /帮助 看命令；直接打字就是开始创作。"><span data-i18n="face.console.n">终端</span></button>
             <button role="tab" type="button" id="ft-cockpit" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="cockpit" data-shot="assets/media/showcase/app/face-cockpit.webp" data-badge="SR" data-badge-key="faces.b_secret" data-badge-label="隐藏款" data-tag="HUD 仪表盘，花费、任务、作品实时读数。" data-how="圆形仪表看花费，雷达看进行中的任务，一键起飞新创作。"><span data-i18n="face.cockpit.n">驾驶舱</span></button>
             <button role="tab" type="button" id="ft-arcade" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="arcade" data-shot="assets/media/showcase/app/face-arcade.webp" data-badge="SSR" data-badge-key="faces.b_secret" data-badge-label="隐藏款" data-tag="8-bit 像素冒险，用方向键选菜单。" data-how="↑↓ 选择，Enter 确定，Esc 返回；像玩游戏一样创作。"><span data-i18n="face.arcade.n">街机</span></button>
-            <button role="tab" type="button" id="ft-itawin" class="is-new" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="itawin" data-badge="0.7.0" data-badge-key="faces.b_new" data-badge-label="新增" data-tag="高自由度的二次元界面，角色立绘和布局都能自己定制。" data-how="在千面里选「二次元·痛窗」，按喜好摆放立绘和各个面板；数据和其余界面共用。"><span data-i18n="face.itawin.n">二次元·痛窗</span></button>
+            <button role="tab" type="button" id="ft-itawin" class="is-new" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="itawin" data-badge="SR" data-badge-key="faces.b_new" data-badge-label="定制款" data-tag="高自由度的二次元界面，角色立绘和布局都能自己定制。" data-how="在千面里选「二次元·痛窗」，按喜好摆放立绘和各个面板；数据和其余界面共用。"><span data-i18n="face.itawin.n">二次元·痛窗</span></button>
           </div>
           <div id="face-panel" class="face-panel" role="tabpanel" aria-labelledby="ft-studio">
             <div class="face-screen">
@@ -591,46 +590,34 @@
       </div>
     </div>
   </section>
-
-  <!-- 新手三步上手 -->
-  <section id="steps" class="section alt">
+  <!-- 真实业务落地场景：让第一次接触软件的新用户一眼看懂能解决什么实际问题 -->
+  <section id="scenarios" class="section alt">
     <div class="wrap">
       <div class="head rv">
-        <span class="eyebrow" data-i18n="start.eyebrow">QUICK START · 三步上手</span>
-        <h2 data-i18n="start.title">三步，做出第一件作品。</h2>
-        <p class="lead" data-i18n="start.lead">下载装好、接上账号或任意兼容 API 站点，说一句话即可看到成品落盘。</p>
+        <span class="eyebrow" data-i18n="cases.eyebrow">REAL-WORLD WORKFLOWS · 真实落地场景</span>
+        <h2 data-i18n="cases.title">从近 30 家网店到百集漫剧，真正在干活的生产力。</h2>
+        <p class="lead" data-i18n="cases.lead">不只是玩具演示。电商老板、连载漫剧团队、外贸企业、教师与科研人员都在用它替代繁琐外包、成倍压缩制作周期。</p>
       </div>
       <div class="steps">
         <article class="step rv">
-          <div class="no">01</div>
-          <h3 data-i18n="start.s1_t">下载并安装</h3>
-          <p data-i18n="start.s1_d">在下方选择 Windows 或 macOS 版本。Windows 双击安装无需管理员权限；Mac 拖进「应用程序」，首次打开按 <a href="#mac">这里的方法</a> 放行一次。浏览器提示「通常不会下载」时，点 <b>…</b> → <b>保留</b>，<a href="#keep-guide">看图解</a>。</p>
-          <div class="actions"><a class="btn btn-primary" href="#download" data-i18n="start.s1_btn">选择系统下载</a></div>
+          <div class="no">电商</div>
+          <h3 data-i18n="cases.c1_t">多店服饰电商：AI 接手打版与商品商拍</h3>
+          <p data-i18n="cases.c1_d">经营近 30 家医护服饰网店的程总团队引入本工具后，服装打版交由 AI 远程协作完成，接手了原本线下的八到十个打版工位；商品主图与模特图改由批量造物与制图总监生成，单张成本约 0.08–0.1 元，替代以往一年三四十万的外包拍摄（据客户访谈实录）。</p>
         </article>
         <article class="step rv">
-          <div class="no">02</div>
-          <h3 data-i18n="start.s2_t">登录账号或连接 API 站点</h3>
-          <p id="step2-text" data-i18n="start.s2_d">可以直接注册登录官方账号充值或核销兑换码；也可以连接任意 OpenAI / new-api 兼容站点（支持手动填地址和 Key，或一键导入）。</p>
-          <div class="actions"><a class="btn btn-ghost" href="#connect" data-i18n="start.s2_btn">查看两种接法</a></div>
+          <div class="no">漫剧</div>
+          <h3 data-i18n="cases.c2_t">小说转百集漫剧：设定锁定 + 预算守护</h3>
+          <p data-i18n="cases.c2_d">把整本连载小说导入漫剧流水线，自动拆章节、立人物定妆照与世界观设定集；先试拍第 1 集确认画风和节奏，开篇几集高配留存、后续集数均衡控费，几十上百集自动连贯出片。</p>
         </article>
         <article class="step rv">
-          <div class="no">03</div>
-          <h3 data-i18n="start.s3_t">开始第一个创作</h3>
-          <p data-i18n="start.s3_d">回到首页输入你的想法，成品自动保存到「作品」和本机目录。点任意一句复制试用：</p>
-          <div class="prompts">
-            <button class="prompt" type="button" data-copy="帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置" data-copy-key="start.c1" data-i18n="start.p1">画一张新品咖啡海报</button>
-            <button class="prompt" type="button" data-copy="把这张图做成 5 秒视频，镜头缓慢推近" data-copy-key="start.c2" data-i18n="start.p2">把图片做成 5 秒视频</button>
-            <button class="prompt" type="button" data-copy="做一个三格小漫剧：主角是一只想当程序员的橘猫" data-copy-key="start.c3" data-i18n="start.p3">做一个三格小漫剧</button>
-            <button class="prompt" type="button" data-copy="写一首轻快主题曲，导出伴奏、LRC 歌词和 1080p 歌词视频" data-copy-key="start.c4" data-i18n="start.p4">原创歌曲 + 歌词视频</button>
-            <button class="prompt" type="button" data-copy="把这个文件夹里的产品照片整理好，做一份 8 页的产品介绍 PPT" data-copy-key="start.c5" data-i18n="start.p5">照片整理成 8 页 PPT</button>
-          </div>
+          <div class="no">企服</div>
+          <h3 data-i18n="cases.c3_t">外贸多语种宣传片、官网与专属客服</h3>
+          <p data-i18n="cases.c3_d">超级导演先出免费代码样片定节奏，再批量生成多语种产品广告与 MV；配合 5 套国内秒开的高审美网站母版与带防幻觉护栏的知识库智能客服，一天搭起完整线上门面。</p>
         </article>
-      </div>
-      <div class="note-box rv" data-i18n="start.note">
-        <b>原 TideVerse 版用户说明：</b>从 0.6.8 起，通用版与 TideVerse 版合并为统一的中性版。原有更新源继续保留，从 TideVerse 版升级会自动接着用原来的记录（对话和配置），不用导入。
       </div>
     </div>
   </section>
+
 
   <!-- 超级导演重磅展示（含 27 秒合集视频 + 11 张起始卡） -->
 <section id="super" class="section dark">
@@ -666,7 +653,7 @@
       <p class="lead" data-i18n="super.lead">先用代码做出不花视频费的动态样片，你看完节奏和梗再挑最搭调的风格卡开拍；支持全能多图参考、大批付费前先发确认清单，中途插话立刻优先。</p>
       <ul class="ticks">
         <li data-i18n="super.t1">先看免费代码样片，满意节奏再动用视频模型，不白花钱</li>
-        <li data-i18n="super.t2">11 张导演起始卡：含 0.6.8 新增「港风叙事 MV」「高奢实拍广告」</li>
+        <li data-i18n="super.t2">11 张导演起始卡：涵盖「港风叙事 MV」「高奢实拍广告」「国风唯美」「巨构震撼」等全题材</li>
         <li data-i18n="super.t3">全能多图参考：关键帧、定妆照与场景图一起交给视频模型，人物更稳动作更自然</li>
         <li data-i18n="super.t4">每批付费前先发确认清单，多任务并行带值班卡，随时插话改方向</li>
       </ul>
@@ -832,7 +819,7 @@
       <article class="feat rv">
         <div class="feat-media">
         <div class="mock">
-          <div class="bar"><i></i>百宝箱 · 44+ 本机免费音视频工具</div>
+          <div class="bar"><i></i>百宝箱 · 300+ 本机免费音视频工具</div>
           <div class="tools">
             <span>智能抠图</span><span>视频超分</span><span>智能换天</span><span>字幕烧录</span>
             <span>人声分离</span><span>格式转码</span><span>隐私打码</span><span>画面识字</span>
@@ -840,9 +827,9 @@
           <div class="chiprow"><span class="chip on">零 API 费用</span><span class="chip">本机直跑</span><span class="chip">拖入即用</span></div>
         </div></div>
         <div class="feat-body">
-          <span class="kicker" data-i18n="f.toolbox.k">44+ LOCAL TOOLS</span>
+          <span class="kicker" data-i18n="f.toolbox.k">300+ LOCAL TOOLS</span>
           <h3 data-i18n="f.toolbox.t">百宝箱</h3>
-          <p class="plain" data-i18n="f.toolbox.d">内置 44+ 款本机免扣费音视频与图像处理小工具：一键抠图、换天、超分放大、人像美颜、隐私打码、画面识字、字幕烧录。</p>
+          <p class="plain" data-i18n="f.toolbox.d">内置 300+ 款本机免扣费音视频与图像处理工具：剪辑混音、一键抠图、换天、超分放大、人像美颜、隐私打码、画面识字、字幕烧录、AE 合成与质检。</p>
           <div class="how"><b data-i18n="feat.how">怎么用</b><p data-i18n="f.toolbox.h">点左侧「百宝箱」，选中需要的工具卡片，把图片或视频拖进去、调好简单滑块，本机直接运行不花 API 费。</p></div>
         </div>
       </article>
@@ -903,7 +890,7 @@
         <div class="feat-body">
           <span class="kicker" data-i18n="f.pool.k">ENGINES &amp; FAILOVER</span>
           <h3 data-i18n="f.pool.t">多内核与号池接力</h3>
-          <p class="plain" data-i18n="f.pool.d">Codex、Claude Code、Devin、Gemini 等多内核任选，任务跑一半也能随时换内核和模型；多条连接排成号池，额度用完或拥挤时自动接力不中断。0.7.0 起五大内核都支持多账号号池自动换号。</p>
+          <p class="plain" data-i18n="f.pool.d">Codex、Claude Code、反重力（Antigravity）、Factory、Devin 五大智能体内核任选，任务跑一半也能随时热切内核和模型；支持多账号排成号池，额度用完或拥挤时自动换号接力不中断。</p>
           <div class="how"><b data-i18n="feat.how">怎么用</b><p data-i18n="f.pool.h">在「配置 → 连接 / 智能体内核」排好顺序并打开「额度接力」，日常干活遇到限流自动切换，恢复后自动切回。</p></div>
         </div>
       </article>
@@ -922,7 +909,7 @@
         <div class="feat-body">
           <span class="kicker" data-i18n="f.plan.k">TASK ORCHESTRATION</span>
           <h3 data-i18n="f.plan.t">计划卡与实时插话</h3>
-          <p class="plain" data-i18n="f.plan.d">大任务自动拆成清晰的步骤计划卡，待办、进行中、已完成三种状态一眼看清（0.7.0 起所有内核统一）；多件事并行有值班卡，按 Ctrl+Enter 插话立即优先，已做完的成果全保留。</p>
+          <p class="plain" data-i18n="f.plan.d">大任务自动拆成清晰的步骤计划卡，所有内核统一用「待办、进行中、已完成」三态实时显示进度；多件事并行有值班卡，按 Ctrl+Enter 插话立即优先，已做完的成果全保留。</p>
           <div class="how"><b data-i18n="feat.how">怎么用</b><p data-i18n="f.plan.h">把复杂目标直接发到对话里，先看一眼计划卡确认步骤；过程中随时补充要求，它会带着已有文件顺着改。</p></div>
         </div>
       </article>
@@ -936,6 +923,46 @@
     </div>
   </div>
 </section>
+
+  <!-- 新手三步上手 -->
+  <section id="steps" class="section alt">
+    <div class="wrap">
+      <div class="head rv">
+        <span class="eyebrow" data-i18n="start.eyebrow">QUICK START · 三步上手</span>
+        <h2 data-i18n="start.title">三步，做出第一件作品。</h2>
+        <p class="lead" data-i18n="start.lead">下载装好、接上账号或任意兼容 API 站点，说一句话即可看到成品落盘。</p>
+      </div>
+      <div class="steps">
+        <article class="step rv">
+          <div class="no">01</div>
+          <h3 data-i18n="start.s1_t">下载并安装</h3>
+          <p data-i18n="start.s1_d">在下方选择 Windows 或 macOS 版本。Windows 双击安装无需管理员权限；Mac 拖进「应用程序」，首次打开按 <a href="#mac">这里的方法</a> 放行一次。浏览器提示「通常不会下载」时，点 <b>…</b> → <b>保留</b>，<a href="#keep-guide">看图解</a>。</p>
+          <div class="actions"><a class="btn btn-primary" href="#download" data-i18n="start.s1_btn">选择系统下载</a></div>
+        </article>
+        <article class="step rv">
+          <div class="no">02</div>
+          <h3 data-i18n="start.s2_t">登录账号或连接 API 站点</h3>
+          <p id="step2-text" data-i18n="start.s2_d">可以直接注册登录官方账号充值或核销兑换码；也可以连接任意 OpenAI / new-api 兼容站点（支持手动填地址和 Key，或一键导入）。</p>
+          <div class="actions"><a class="btn btn-ghost" href="#connect" data-i18n="start.s2_btn">查看两种接法</a></div>
+        </article>
+        <article class="step rv">
+          <div class="no">03</div>
+          <h3 data-i18n="start.s3_t">开始第一个创作</h3>
+          <p data-i18n="start.s3_d">回到首页输入你的想法，成品自动保存到「作品」和本机目录。点任意一句复制试用：</p>
+          <div class="prompts">
+            <button class="prompt" type="button" data-copy="帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置" data-copy-key="start.c1" data-i18n="start.p1">画一张新品咖啡海报</button>
+            <button class="prompt" type="button" data-copy="把这张图做成 5 秒视频，镜头缓慢推近" data-copy-key="start.c2" data-i18n="start.p2">把图片做成 5 秒视频</button>
+            <button class="prompt" type="button" data-copy="做一个三格小漫剧：主角是一只想当程序员的橘猫" data-copy-key="start.c3" data-i18n="start.p3">做一个三格小漫剧</button>
+            <button class="prompt" type="button" data-copy="写一首轻快主题曲，导出伴奏、LRC 歌词和 1080p 歌词视频" data-copy-key="start.c4" data-i18n="start.p4">原创歌曲 + 歌词视频</button>
+            <button class="prompt" type="button" data-copy="把这个文件夹里的产品照片整理好，做一份 8 页的产品介绍 PPT" data-copy-key="start.c5" data-i18n="start.p5">照片整理成 8 页 PPT</button>
+          </div>
+        </article>
+      </div>
+      <div class="note-box rv" data-i18n="start.note">
+        <b>原 TideVerse 版用户说明：</b>从 0.6.8 起，通用版与 TideVerse 版合并为统一的中性版。原有更新源继续保留，从 TideVerse 版升级会自动接着用原来的记录（对话和配置），不用导入。
+      </div>
+    </div>
+  </section>
 
   <!-- 团队协作、千面界面、语音与更多内置能力 -->
   <section id="workspace" class="section alt">
@@ -953,7 +980,7 @@
         </article>
         <article class="eco-card rv">
           <h3 data-i18n="eco.faces_t">千面（10 套界面）· 局域网协作 · 改造自己</h3>
-          <p class="muted" data-i18n="eco.faces_d">按 <kbd>F2</kbd> 随时在经典、一句话、对话、磁贴、口袋、桌面、终端（以及扭蛋解锁的驾驶舱、街机）和 0.7.0 新增的「二次元·痛窗」之间切换，全部数据共用。<a href="#faces">看 10 套界面 →</a></p>
+          <p class="muted" data-i18n="eco.faces_d">按 <kbd>F2</kbd> 随时在经典、一句话、对话、磁贴、口袋、桌面、终端、驾驶舱、街机与「二次元·痛窗」10 套界面之间切换，全部数据共用。<a href="#faces">看 10 套界面 →</a></p>
           <ul class="eco-list">
             <li data-i18n="eco.li1"><b>局域网与跨网络协作：</b>默认关闭，6 位码配对互信，群聊派任务卡，他机不能在本机执行命令。</li>
             <li data-i18n="eco.li2"><b>账本与消费上限：</b>支持单次对话、每日、每月设消费上限，到额自动停止；Key 本机加密保存。</li>
@@ -962,8 +989,7 @@
           </ul>
         </article>
         <article class="eco-card wide rv">
-          <span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span>
-          <h3 data-i18n="eco.voice_t">语音直控与桌面陪伴助手</h3>
+          <h3 data-i18n="eco.voice_t">桌面语音伙伴与全软件直控</h3>
           <p class="muted" data-i18n="eco.voice_d">不想打字就直接说：切页面、开画布、发起批量造物、换界面，都可以用语音指挥。桌面陪伴助手常驻桌面随叫随到，离线和在线两种自然语音连聊都支持；不用语音时，照常打字即可。</p>
         </article>
       </div>
@@ -1062,22 +1088,22 @@
   <section id="changelog" class="section alt">
     <div class="wrap">
       <div class="head rv">
-        <span class="eyebrow" data-i18n="cl.eyebrow">RELEASE NOTES · 0.7.0 重磅更新</span>
-        <h2 data-i18n="cl.title">0.7.0：开口，就能指挥整个软件。</h2>
-        <p class="lead" data-i18n="cl.lead">桌面陪伴助手与自然语音连聊、全软件语音直控、千面第 10 套界面、五内核多账号号池、全内核三态进度计划卡。</p>
+        <span class="eyebrow" data-i18n="cl.eyebrow">VERSION HISTORY · 版本更新记录</span>
+        <h2 data-i18n="cl.title">从 0.6.8 到 0.7.0：老用户升级完整清单</h2>
+        <p class="lead" data-i18n="cl.lead">面向从旧版升级的用户整理：涵盖一站式账号中心、桌面陪伴助手及天气/早报/定时/清理插件工坊、全软件语音直控、谷歌槽位升级反重力内核与五内核多账号号池、千面二次元痛窗、300+ 百宝箱工具及长对话提速近 30 倍等全部新增内容。</p>
       </div>
       <div class="notes notes-new">
-        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n1_t">桌面陪伴助手与离线 / 在线自然语音连聊</h3><p data-i18n="cl.n1_d">桌面陪伴助手常驻桌面、随叫随到；离线和在线两种语音都支持自然连聊，像和朋友说话一样一句接一句，不用每次都点按钮。</p></article>
-        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n2_t">全软件语音直控</h3><p data-i18n="cl.n2_d">不只是语音输入：切页面、开画布、发起批量造物、换界面，都可以直接说，软件听懂后替你点到位。</p></article>
-        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n3_t">千面第 10 套「二次元·痛窗」立绘布局定制</h3><p data-i18n="cl.n3_d">高自由度的二次元界面：角色立绘和布局都可以按自己的喜好定制，数据与其余 9 套界面共用，按 F2 随时切换。</p></article>
-        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n4_t">五内核多账号号池自动换号</h3><p data-i18n="cl.n4_d">五大内核都能配置多账号号池：一个账号额度用完或被限流时自动换下一个，带着原对话上下文续跑，做好的成品不重做。</p></article>
-        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n5_t">全内核三态进度计划卡</h3><p data-i18n="cl.n5_d">不管用哪个内核，任务都用同一种计划卡展示进度：待办、进行中、已完成三种状态一眼看清，做到哪一步不用猜。</p></article>
-        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n6_t">创作台三大主页与 DiffSinger 本地原创音乐</h3><p data-i18n="cl.n6_d">画布、批量造物、百宝箱继续作为创作台三大主页；音乐创作接入 DiffSinger，原创歌曲的歌声可以在本机合成。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">v0.7.0 升级</span><h3 data-i18n="cl.n1_t">一站式账号中心与桌面语音陪伴助手</h3><p data-i18n="cl.n1_d">应用内支持账号注册登录、在线充值、兑换码核销与查看全部模型实时价格（旧版升级自动接管原数据）；安装包随包内置离线听写与配音模型，支持离线/在线自然语音连聊、声纹认主人、四屏看屏免截图快控 Word/Excel 与「教她一次」。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">v0.7.0 升级</span><h3 data-i18n="cl.n2_t">日常插件中心（天气、早报、定时、空间清理）与全软件语音直控</h3><p data-i18n="cl.n2_d">内置免卡实时天气穿衣、60 秒早报热搜、秒级与每周闹钟、番茄钟、电脑空间安全清理顾问与插件增删改查；直接开口即可新建持久化助手、拉多智能体群聊、组建 AI 团队、切换界面或说「改回去」无损还原。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">v0.7.0 升级</span><h3 data-i18n="cl.n3_t">千面第 10 套「二次元·痛窗」高自由度定制工坊</h3><p data-i18n="cl.n3_d">按 F2 免抽直选「痛窗」：支持 11 位内置角色单帧动作立绘与本地透明立绘上传、导航栏与伴读舞台四向自由摆放、心情贴纸、挂件装饰与顶部专属留言签语。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">v0.7.0 升级</span><h3 data-i18n="cl.n4_t">谷歌槽位升级「反重力」内核与五内核多账号号池</h3><p data-i18n="cl.n4_d">全面接入反重力（Antigravity）原生内核，打通大工具集开子任务与跨整点鉴权闪断自动重连；Codex、Claude Code、反重力、Factory、Devin 五大内核均支持本机加密多账号号池自动换号续跑。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">v0.7.0 升级</span><h3 data-i18n="cl.n5_t">300+ 百宝箱工具、DiffSinger 本地作曲与专项新技能</h3><p data-i18n="cl.n5_d">百宝箱扩容至 300+ 款本机零费媒体工具，音乐页支持 DiffSinger 本机精确作曲演唱，新增视频穿帮局部精修、代码动效大片、拍题讲课视频、剪映草稿导出与 4 套工程办公技能。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">v0.7.0 升级</span><h3 data-i18n="cl.n6_t">超长对话提速近 30 倍与全链路稳定性打磨</h3><p data-i18n="cl.n6_d">聊天分段懒加载让 3640 条长对话切换从 7.6 秒降至 0.19 秒且往上翻不跳位置；统一全内核三态进度计划卡与全中文步骤名，修复点停止假死、轻聊桌面落盘与锁模型等细节。</p></article>
       </div>
 
       <h3 class="cl-sub rv" data-i18n="cl.sub068">0.6.8 更新回顾</h3>
       <div class="notes">
-        <article class="note rv"><h3 data-i18n="cl.i1_t">创作台升级为「画布 · 批量造物 · 百宝箱」三大主页</h3><p data-i18n="cl.i1_d">左侧导航直接打开无限画布、批量造物（多提示词并发出图出视频、H3 原生运镜合成）与百宝箱（44+ 款本机免扣费音视频处理、抠图超分、字幕烧录即填即跑）。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i1_t">创作台升级为「画布 · 批量造物 · 百宝箱」三大主页</h3><p data-i18n="cl.i1_d">左侧导航直接打开无限画布、批量造物（多提示词并发出图出视频、H3 原生运镜合成）与百宝箱（300+ 款本机免扣费音视频处理、抠图超分、字幕烧录即填即跑）。</p></article>
         <article class="note rv"><h3 data-i18n="cl.i2_t">一等公民「音乐创作」与免修嘴精准配音</h3><p data-i18n="cl.i2_d">独立「音乐」页支持写词谱曲、主题曲、说唱与器乐分轨，本机直出母带、伴奏、LRC 歌词与 1080p 歌词字幕样片；漫剧与成片配音自动贴合画面开口包络，全程不改像素不 P 嘴。</p></article>
         <article class="note rv"><h3 data-i18n="cl.i3_t">一登录一充值、兑换码核销与免配 Key 精品语音</h3><p data-i18n="cl.i3_d">登录官方账号即可一处充值、兑换码核销并打通对话、生图、生视频与在线高清配音，无需单独填配音 Key；智能路由升级为首选软偏好，繁忙时自动回退健康线路。</p></article>
         <article class="note rv"><h3 data-i18n="cl.i4_t">新增「港风叙事 MV」「高奢实拍广告」风格卡与超级导演后置选卡</h3><p data-i18n="cl.i4_d">漫剧总监与超级导演新增两张实战风格卡；超级导演开局可选「先不选风格卡」，等免费代码样片拍板时再推荐 2–3 张最搭调的风格卡敲定开拍。</p></article>
@@ -1325,10 +1351,10 @@
       </div>
       <div class="faq-cols">
         <details class="rv"><summary data-i18n="faq.q1">通用版和原来的 TideVerse 版是什么关系？</summary><div><p data-i18n="faq.a1">从 0.6.8 起，原通用版与 TideVerse 版合并为统一的「万能创作终端」中性版。老 TideVerse 用户的更新源继续保留，从 TideVerse 版升级会自动接着用原来的记录（对话和配置），不用导入。</p></div></details>
-        <details class="rv"><summary data-i18n="faq.q2">下载和使用软件要花钱吗？</summary><div><p data-i18n="faq.a2">下载、安装和个人使用软件完全免费。内置 44+ 百宝箱本地工具不花 API 费；调用云端对话、生图、生视频模型时，按你登录的账号或所连接 API 站点的实际用量计费，软件内置账本与消费上限。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q2">下载和使用软件要花钱吗？</summary><div><p data-i18n="faq.a2">下载、安装和个人使用软件完全免费。内置 300+ 款百宝箱本地工具不花 API 费；调用云端对话、生图、生视频模型时，按你登录的账号或所连接 API 站点的实际用量计费，软件内置账本与消费上限。</p></div></details>
         <details class="rv"><summary data-i18n="faq.q3">没有 API 站点怎么办？支持哪些站点？</summary><div><p data-i18n="faq.a3">你可以直接在软件里注册登录官方账号并充值 / 核销兑换码使用，也可以连接任意兼容 OpenAI / new-api 接口的第三方站点（支持手动填地址和 Key，或支持智能路由站点的一键导入）。</p></div></details>
         <details class="rv"><summary data-i18n="faq.q4">浏览器提示「通常不会下载」，或者下载被拦住了怎么办？</summary><div><p data-i18n="faq.a4">这是内测版安装包还没有代码签名时浏览器的常规提示。在下载气泡里点「…」→「保留」（有的版本写作 Keep、保存或「仍然保留」）就能留下文件；随后 Windows 弹出蓝色窗口时点「更多信息 → 仍要运行」。想更放心，可以用下载卡片上的 SHA256 核对文件。<a href="#keep-guide">看图解步骤</a>。</p></div></details>
-        <details class="rv"><summary data-i18n="faq.q5">0.7.0 的语音直控和桌面陪伴助手怎么用？</summary><div><p data-i18n="faq.a5">0.7.0 起可以直接开口指挥软件：切页面、开画布、发起创作都能说；桌面陪伴助手常驻桌面，支持离线与在线两种自然语音连聊。不想用语音时，照常打字即可，原有用法都不变。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q5">桌面陪伴助手和语音直控怎么开启使用？</summary><div><p data-i18n="faq.a5">在左侧导航打开「桌宠」即可召唤陪伴助手常驻桌面：安装包已内置离线听写与配音模型，支持离线与在线自然语音连聊、实时天气早报定时、看屏操作办公软件，以及开口建助手、拉群、切页面；不想用语音时照常打字即可。</p></div></details>
         <details class="rv"><summary data-i18n="faq.q6">要建几个 Key？文本、生图、视频要分开吗？</summary><div><p data-i18n="faq.a6">一般一个 Key 就够，填一次全部共用。如果站点把文本、生图、视频分在不同分组，或你想分开看花费，可以在连接表单里给对应项点「单独设置」。</p></div></details>
         <details class="rv"><summary data-i18n="faq.q7">要不要提前装 Codex、Claude Code 或 Node.js？</summary><div><p data-i18n="faq.a7">不用提前装。Windows 安装版内置 Codex；免安装版和 Mac 版缺少时，在「配置 → 智能体内核」点「一键安装 Codex」即可，装在软件自己的目录里，不改你电脑原有配置。</p></div></details>
         <details class="rv"><summary data-i18n="faq.q8">「一键导入」点了没反应怎么办？</summary><div><p data-i18n="faq.a8">常见于免安装版或浏览器拦截。可在站点弹窗里复制导入码，回软件按 Ctrl+V（Mac 上 ⌘+V）；或下载导入文件，在「配置 → 连接」点「打开导入文件」。导入链接通常 10 分钟内有效、单次可用。</p></div></details>

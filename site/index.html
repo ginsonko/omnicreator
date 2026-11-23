@@ -4,23 +4,41 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>万能创作终端 OmniCreator · 想做什么，直接说</title>
-  <meta name="description" content="万能创作终端（中性版，原通用版与 TideVerse 版合为一版）：把多内核 AI 对话与漫剧总监、超级导演、制图总监、音乐创作、无限画布、44+ 本机工具装进一个窗口，支持连接任意 OpenAI / new-api 兼容站点。"/>
+  <meta name="description" content="万能创作终端（中性版，原通用版与 TideVerse 版合为一版）：把多内核 AI 对话与漫剧总监、超级导演、制图总监、音乐创作、无限画布、44+ 本机工具装进一个窗口，0.7.0 起支持全软件语音直控与桌面陪伴助手，可连接任意 OpenAI / new-api 兼容站点。"/>
   <meta property="og:title" content="万能创作终端 OmniCreator · 想做什么，直接说"/>
   <meta property="og:description" content="一个窗口，一整个创作团队。支持 Windows 与 macOS，个人免费使用，自由连接任意兼容 API 站点。"/>
   <meta property="og:image" content="assets/img/og-image.jpg"/>
   <meta property="og:type" content="website"/>
+  <meta name="theme-color" content="#0b1122"/>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/img/icon-192.png"/>
   <link rel="icon" type="image/png" sizes="512x512" href="assets/img/icon-512.png"/>
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png"/>
   <link rel="manifest" href="site.webmanifest"/>
-  <link rel="stylesheet" href="assets/css/site.css?v=0.6.8"/>
+  <link rel="stylesheet" href="assets/css/site.css?v=0.7.0"/>
   <script>
+    /* 首帧之前就定好主题与性能档位，避免先重后轻的闪烁。
+       data-perf="lite" = 流畅模式：不跑 Canvas 循环、不用重度模糊；"full" = 完整动效。
+       用户手动选过（localStorage oc-perf）就听用户的，否则按设备自动判断。 */
     (function () {
+      var d = document.documentElement;
       try {
         var t = localStorage.getItem('oc-theme');
-        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        if (t === 'light' || t === 'dark') d.setAttribute('data-theme', t);
       } catch (e) {}
+      var perf = 'full', why = '';
+      try {
+        var saved = null;
+        try { saved = localStorage.getItem('oc-perf'); } catch (e) {}
+        var mm = function (q) { return !!(window.matchMedia && matchMedia(q).matches); };
+        if (saved === 'lite' || saved === 'full') { perf = saved; why = 'user'; }
+        else if (mm('(prefers-reduced-motion: reduce)')) { perf = 'lite'; why = 'reduced-motion'; }
+        else if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) { perf = 'lite'; why = 'cores'; }
+        else if (navigator.deviceMemory && navigator.deviceMemory <= 4) { perf = 'lite'; why = 'memory'; }
+        else if (mm('(max-width: 760px)')) { perf = 'lite'; why = 'small-screen'; }
+      } catch (e) { perf = 'lite'; why = 'error'; }
+      d.setAttribute('data-perf', perf);
+      if (why) d.setAttribute('data-perf-why', why);
     })();
     window.SITE_BRAND = {
       app: '万能创作终端',
@@ -28,9 +46,10 @@
       key: '不要向我索要任何 API Key、兑换码或密码，也不要把它们写进文件或命令。'
     };
   </script>
-  <script defer src="assets/js/config-fallback.js?v=0.6.8"></script>
-  <script defer src="assets/js/i18n.js?v=0.6.8"></script>
-  <script defer src="assets/js/site.js?v=0.6.8"></script>
+  <script defer src="assets/js/config-fallback.js?v=0.7.0"></script>
+  <script defer src="assets/js/i18n.js?v=0.7.0"></script>
+  <script defer src="assets/js/site.js?v=0.7.0"></script>
+  <script defer src="assets/js/fx.js?v=0.7.0"></script>
 </head>
 <body>
 <a class="skip" href="#main" data-i18n="skip">跳到正文</a>
@@ -40,7 +59,7 @@
   <div id="partner-bar" class="partner-bar" hidden>
     <div class="wrap">
       <img id="partner-logo" alt="" hidden/>
-      <span>本页由 <a id="partner-link" href="#download" target="_blank" rel="noopener"><b id="partner-name"></b></a> 托管</span>
+      <span><span id="partner-pre">本页由</span> <a id="partner-link" href="#download" target="_blank" rel="noopener"><b id="partner-name"></b></a> <span id="partner-post">托管</span></span>
       <span id="partner-contact-top" hidden></span>
     </div>
   </div>
@@ -49,22 +68,36 @@
       <img src="assets/img/logo-96.webp" alt="万能创作终端" width="34" height="34"/>
       <span><b data-i18n="brand.name">万能创作终端</b><small data-i18n="brand.sub">OMNICREATOR</small></span>
     </a>
-    <nav id="nav" class="nav" aria-label="主导航">
+    <nav id="nav" class="nav" aria-label="主导航" data-i18n-aria-label="a11y.nav">
+      <a href="#showcase" data-i18n="nav.wall">作品墙</a>
       <a href="#steps" data-i18n="nav.start">三步上手</a>
       <a href="#features" data-i18n="nav.features">核心功能</a>
       <a href="#connect" class="opt" data-i18n="nav.connect">连接站点</a>
       <a href="#videos" class="opt" data-i18n="nav.videos">教程视频</a>
-      <a href="#changelog" data-i18n="nav.changelog">0.6.8 更新</a>
+      <a href="#changelog" data-i18n="nav.changelog">0.7.0 更新</a>
       <a href="#download" data-i18n="nav.download">下载</a>
       <a href="#faq" class="opt" data-i18n="nav.faq">常见问题</a>
     </nav>
     <div class="top-actions">
-      <div class="lang" role="group" aria-label="切换语言">
-        <button type="button" data-lang-btn="zh" aria-pressed="true">中</button>
-        <button type="button" data-lang-btn="en" aria-pressed="false">EN</button>
-        <button type="button" data-lang-btn="ja" aria-pressed="false">日本語</button>
+      <!-- 四语切换：宽屏是分段按钮，窄屏换成同步的下拉框，避免顶栏挤出横向滚动 -->
+      <div class="lang" role="group" aria-label="切换语言" data-i18n-aria-label="a11y.lang">
+        <button type="button" data-lang-btn="zh" aria-pressed="true" lang="zh-CN" title="简体中文">简</button>
+        <button type="button" data-lang-btn="zh-TW" aria-pressed="false" lang="zh-TW" title="繁體中文">繁體</button>
+        <button type="button" data-lang-btn="en" aria-pressed="false" lang="en" title="English">EN</button>
+        <button type="button" data-lang-btn="ja" aria-pressed="false" lang="ja" title="日本語">日本語</button>
       </div>
-      <button id="theme-btn" class="icon-btn" type="button" aria-label="切换深色与浅色模式" title="切换深色 / 浅色">
+      <select id="lang-select" class="lang-select" aria-label="切换语言" data-i18n-aria-label="a11y.lang">
+        <option value="zh" lang="zh-CN">简体</option>
+        <option value="zh-TW" lang="zh-TW">繁體</option>
+        <option value="en" lang="en">EN</option>
+        <option value="ja" lang="ja">日本語</option>
+      </select>
+      <!-- ⚡ 流畅模式：一键关掉 Canvas 循环与重度模糊，低配设备不卡 -->
+      <button id="perf-btn" class="icon-btn perf-btn" type="button" aria-pressed="false" aria-label="流畅模式：关闭重动效，低配电脑更顺" data-i18n-aria-label="perf.aria" title="⚡ 流畅模式" data-i18n-title="perf.title">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></svg>
+        <span class="perf-label" data-i18n="perf.label">流畅模式</span>
+      </button>
+      <button id="theme-btn" class="icon-btn" type="button" aria-label="切换深色与浅色模式" data-i18n-aria-label="theme.aria" title="切换深色 / 浅色" data-i18n-title="theme.title">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
       <a class="btn btn-primary top-dl" href="#download" data-i18n="nav.top_dl">免费下载</a>
@@ -76,41 +109,51 @@
 </header>
 
 <main id="main">
-  <!-- 首屏 Hero：一眼下载 Windows / Mac + 现代工作台预览 -->
+  <!-- 首屏 Hero：一眼下载 Windows / Mac + Canvas 光影波形舞台（语音直控与多智能体协作演示） -->
   <section id="top" class="hero">
+    <!-- 全幅光带画布：只在完整动效模式下循环绘制，流畅模式画一帧静态图 -->
+    <canvas id="fx-ribbons" class="fx-ribbons" aria-hidden="true"></canvas>
     <div class="wrap">
-      <div>
+      <div class="hero-copy">
         <div class="hero-tag">
-          <span class="pill hot"><span>v<span data-ver>0.6.8</span></span></span>
+          <span class="pill hot"><span>v<span data-ver>0.7.0</span></span></span>
+          <span class="pill new" data-i18n="hero.badge_new">新 · 语音直控 × 桌面陪伴助手</span>
           <span class="pill" data-i18n="hero.badge_merge">通用版 × TideVerse 统一中性版</span>
           <span class="pill">Windows · macOS</span>
         </div>
         <h1 data-i18n="hero.h1">想做什么，<em>直接说</em>。<br/>一整个创作团队。</h1>
-        <p class="sub" data-i18n="hero.sub">把 Codex / Claude Code / Devin 多内核对话与全套媒体创作台装进一个桌面软件。漫剧、超级导演、制图、音乐、无限画布、百宝箱全内置，登录账号或接入任意 OpenAI / new-api 兼容站点即可开工。</p>
+        <p class="sub" data-i18n="hero.sub">把 Codex / Claude Code / Devin 多内核对话与全套媒体创作台装进一个桌面软件。漫剧、超级导演、制图、音乐、无限画布、百宝箱全内置，打字或直接开口说都行；登录账号或接入任意 OpenAI / new-api 兼容站点即可开工。</p>
 
         <div id="partner-notice" class="partner-notice" hidden></div>
 
         <div class="dl-pair">
           <a id="hero-dl-win" class="btn btn-primary" href="#download">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10 4.5v7H3zM11 4.3 21 3v8.5H11zM3 12.5h7v7l-7-1zM11 12.5h10V21l-10-1.4z"/></svg>
-            <span><span class="hl">Windows 下载</span><span class="hm">v0.6.8 · 免费</span></span>
+            <span><span class="hl">Windows 下载</span><span class="hm">v0.7.0 · 免费</span></span>
           </a>
           <a id="hero-dl-mac" class="btn btn-ghost" href="#download">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>
-            <span><span class="hl">Mac 下载 · Apple</span><span class="hm">v0.6.8 · 免费</span></span>
+            <span><span class="hl">Mac 下载 · Apple</span><span class="hm">v0.7.0 · 免费</span></span>
           </a>
           <button id="hero-dl-pc" class="btn btn-primary" type="button" hidden>复制链接，到电脑上下载</button>
         </div>
         <span id="hero-dl-label" hidden>Windows 下载</span>
+
+        <!-- 新手下载引导（首屏紧凑版）：平时只占一行，点下载 .exe 时自动展开；图解内容由 site.js 从 #keep-guide 克隆 -->
+        <details id="hero-keep" class="keep keep-mini">
+          <summary><span class="keep-ico" aria-hidden="true">!</span><span data-i18n="keep.sum_hero">浏览器提示「通常不会下载」？点 <b>…</b> → <b>保留</b> 就行，点这里看图解</span></summary>
+          <div class="keep-body" data-keep-clone><p class="fine"><a href="#keep-guide" data-i18n="keep.fallback">查看下载区的图解步骤 ↓</a></p></div>
+        </details>
+
         <p class="hero-detect">
           <span id="hero-detect">Windows 10 / 11（64 位）· macOS 13 及以上 · 全部版本与校验值</span> ·
           <a href="#download" data-i18n="hero.all_builds">全部版本与校验值</a> ·
           <a href="#agent" data-i18n="hero.agent_go">让 Agent 帮我装</a>
         </p>
 
-        <div class="chat-mock" aria-label="对话示意">
+        <div class="chat-mock" aria-label="对话示意" data-i18n-aria-label="a11y.chat">
           <div class="row">
-            <span id="typer" data-lines="[&quot;帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置&quot;, &quot;把这个文件夹里的产品照片整理好，做一份 8 页介绍 PPT&quot;, &quot;把这本小说做成漫剧，先试拍第 1 集给我看节奏&quot;, &quot;写一首轻快主题曲，导出伴奏、LRC 歌词与 1080p 歌词片&quot;, &quot;帮我做一个科技产品官网，不依赖境外字体，微信里秒开&quot;]" data-lines-en="[&quot;Design a warm-toned caramel latte launch poster with title space&quot;, &quot;Organize these product photos into an 8-slide presentation deck&quot;, &quot;Adapt this novel into a manga drama, test-render Episode 1 first&quot;, &quot;Compose an upbeat theme song with stems, LRC and 1080p lyric video&quot;, &quot;Build a sleek product landing page with zero overseas CDN assets&quot;]" data-lines-ja="[&quot;新作キャラメルラテのポスターを暖色系で作って&quot;, &quot;このフォルダの商品写真から 8 ページの紹介資料を作って&quot;, &quot;この小説を漫画動画にして、まず第 1 話の試作を見せて&quot;, &quot;明るい主題歌を作詞作曲して、伴奏と 1080p 歌詞動画を出力して&quot;, &quot;海外 CDN を使わない高速な製品ランディングページを作って&quot;]">帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置</span>
+            <span id="typer" data-lines-key="hero.typer" data-lines="[&quot;帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置&quot;, &quot;把这个文件夹里的产品照片整理好，做一份 8 页介绍 PPT&quot;, &quot;把这本小说做成漫剧，先试拍第 1 集给我看节奏&quot;, &quot;写一首轻快主题曲，导出伴奏、LRC 歌词与 1080p 歌词片&quot;, &quot;帮我做一个科技产品官网，不依赖境外字体，微信里秒开&quot;]">帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置</span>
             <span class="caret" aria-hidden="true"></span>
             <span class="send" aria-hidden="true">↑</span>
           </div>
@@ -127,20 +170,38 @@
       </div>
 
       <div class="hero-art">
-        <div class="studio-card">
+        <div class="studio-card stage" id="stage">
           <img class="studio-mascot" src="assets/img/mascot-560.webp" alt="万能创作终端" width="92" height="92"/>
           <div class="studio-bar">
             <div class="studio-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-            <span>万能创作终端 · 工作室与多 AI 协作视图</span>
+            <span data-i18n="stage.title">万能创作终端 · 语音直控与多 AI 协作演示</span>
           </div>
-          <div class="studio-shot">
-            <img src="assets/img/shot-office.webp" alt="万能创作终端工作室界面截图" width="520" height="325"/>
+          <!-- 舞台屏幕：真实工作室截图作底，上面叠一层 Canvas 声波光球与智能体轨道；鼠标移动会带动波形，点一下有涟漪 -->
+          <div class="stage-screen" id="stage-screen">
+            <img class="stage-bg" src="assets/img/shot-office.webp" alt="万能创作终端工作室界面截图" data-i18n-alt="stage.shot_alt" width="520" height="325"/>
+            <canvas id="fx-stage" class="fx-stage" aria-hidden="true"></canvas>
+            <div class="stage-hud">
+              <div class="voice-line">
+                <span class="mic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4M9 21h6"/></svg></span>
+                <span class="voice-state" id="voice-state" data-i18n="stage.listening">正在听…</span>
+                <span class="voice-text" id="voice-text" data-lines-key="stage.voice" data-lines="[&quot;打开画布，把第三镜换成雨夜&quot;, &quot;批量造物，这十条提示词各出一张&quot;, &quot;切到痛窗界面，立绘放到右边&quot;, &quot;把刚才那首歌导出伴奏和歌词视频&quot;]">打开画布，把第三镜换成雨夜</span>
+              </div>
+              <div class="agents" id="stage-agents" aria-hidden="true">
+                <span class="agent-chip on" data-i18n="stage.a1">导演</span><span class="agent-chip" data-i18n="stage.a2">编剧</span><span class="agent-chip" data-i18n="stage.a3">画师</span><span class="agent-chip" data-i18n="stage.a4">剪辑</span><span class="agent-chip" data-i18n="stage.a5">配音</span>
+              </div>
+            </div>
           </div>
+          <!-- 三态进度计划卡示意：已完成 / 进行中 / 待办 -->
+          <ol class="plan3" id="stage-plan" aria-label="三态进度计划卡示意" data-i18n-aria-label="stage.plan_aria">
+            <li class="done"><span data-i18n="stage.s1">听懂这句话要做什么</span></li>
+            <li class="now"><span data-i18n="stage.s2">分派给对应的智能体开工</span></li>
+            <li class="todo"><span data-i18n="stage.s3">成品保存到「作品」并回报</span></li>
+          </ol>
           <div class="studio-mini">
-            <img src="assets/img/sample-poster.webp" alt="海报成品示例" width="112" height="82"/>
+            <img src="assets/img/sample-poster.webp" alt="海报成品示例" data-i18n-alt="stage.mini_alt" width="112" height="82"/>
             <div>
-              <b>✓ 规划画面 · ✓ 生成海报 · ✓ 保存到作品</b>
-              <span>一句话交付成品到本机文件夹，可继续说「换成竖版」「再生成 5 秒动态视频」。</span>
+              <b data-i18n="stage.mini_t">✓ 规划画面 · ✓ 生成海报 · ✓ 保存到作品</b>
+              <span data-i18n="stage.mini_d">一句话交付成品到本机文件夹，可继续说「换成竖版」「再生成 5 秒动态视频」。</span>
             </div>
           </div>
         </div>
@@ -150,12 +211,384 @@
   </section>
 
   <!-- 核心数据条 -->
-  <section class="strip" aria-label="核心概览">
+  <section class="strip" aria-label="核心概览" data-i18n-aria-label="a11y.strip">
     <div class="wrap">
       <div class="cell"><b data-i18n="stat.engines_n">12 大模块</b><span data-i18n="stat.engines_l">漫剧 / 导演 / 制图 / 音乐 / 画布</span></div>
       <div class="cell"><b data-i18n="stat.tools_n">44+ 工具</b><span data-i18n="stat.tools_l">百宝箱本机免扣费直跑</span></div>
       <div class="cell"><b data-i18n="stat.multi_n">多内核接力</b><span data-i18n="stat.multi_l">Codex / Claude / Devin 热切换</span></div>
       <div class="cell"><b data-i18n="stat.free_n">个人免费</b><span data-i18n="stat.free_l">自由接入兼容 API · 零追踪</span></div>
+    </div>
+  </section>
+
+  <!-- 全场景真实作品墙：30 件作品 + 分类筛选 + 复制同款一句话需求 + 实机混剪预览 + 千面 10 套界面 -->
+  <section id="showcase" class="section dark wall">
+    <div class="wrap">
+      <div class="head rv">
+        <span class="eyebrow" data-i18n="wall.eyebrow">REAL WORKS · 全场景真实作品墙</span>
+        <h2 data-i18n="wall.title">居然连这些，都能<em>一句话</em>做出来。</h2>
+        <p class="lead" data-i18n="wall.lead">30 件用软件做出来的真实作品：短剧、广告、MV、混剪、课件、本机后期，还有本地显卡实测样片。每张卡片都能复制同款的一句话需求，粘贴进软件就能照着做。</p>
+      </div>
+
+      <div class="wall-top">
+        <!-- 实机混剪预览：不自动下载视频；鼠标移上去或点一下才开始播，滚出视口自动暂停 -->
+        <figure class="reel rv" data-reel>
+          <video muted loop playsinline preload="none" poster="assets/media/showcase/hero-reel-poster.jpg" src="assets/media/showcase/hero-reel.mp4"></video>
+          <button class="reel-play" type="button" aria-label="播放实机混剪预览" data-i18n-aria-label="wall.reel_aria"><i></i></button>
+          <figcaption>
+            <b data-i18n="wall.reel_t">实机混剪预览 · 23 秒</b>
+            <span data-i18n="wall.reel_d">漫剧、真人质感短片、MV、广告、讲题、高光、鬼畜、Vlog，一口气看完。鼠标移上来或点一下播放。</span>
+          </figcaption>
+        </figure>
+        <div class="wall-side">
+          <button class="super-clip rv" type="button" data-clip="assets/media/super-collection.mp4" data-clip-portrait data-clip-title="超级导演 · 27 秒样片合集" data-clip-title-key="wall.super_t">
+            <img src="assets/media/super-collection.jpg" alt="超级导演 27 秒样片合集封面" data-i18n-alt="wall.super_t" width="90" height="160" loading="lazy" decoding="async"/>
+            <span class="super-clip-body">
+              <b data-i18n="wall.super_t">超级导演 · 27 秒样片合集</b>
+              <span data-i18n="wall.super_d">同一个故事的十一种拍法，点开直接看。</span>
+              <em data-i18n="wall.super_go">▶ 播放 27 秒合集</em>
+            </span>
+          </button>
+          <ul class="wall-stats rv" aria-label="作品墙数据" data-i18n-aria-label="a11y.wall_stats">
+            <li><b>30</b><span data-i18n="wall.n1">件真实作品</span></li>
+            <li><b>6</b><span data-i18n="wall.n2">大创作场景</span></li>
+            <li><b>10</b><span data-i18n="wall.n3">套千面界面</span></li>
+            <li><b>44+</b><span data-i18n="wall.n4">款本机零费工具</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="wall-filters" class="wall-filters rv" role="group" aria-label="按场景筛选作品" data-i18n-aria-label="a11y.wall_filter">
+        <button type="button" data-filter="all" aria-pressed="true"><span data-i18n="wall.f_all">全部</span><i>30</i></button>
+        <button type="button" data-filter="drama" aria-pressed="false"><span data-i18n="wall.c_drama">短剧与电影</span><i>4</i></button>
+        <button type="button" data-filter="biz" aria-pressed="false"><span data-i18n="wall.c_biz">商业与MV</span><i>4</i></button>
+        <button type="button" data-filter="edit" aria-pressed="false"><span data-i18n="wall.c_edit">剪辑与特效</span><i>6</i></button>
+        <button type="button" data-filter="edu" aria-pressed="false"><span data-i18n="wall.c_edu">教学与课件</span><i>5</i></button>
+        <button type="button" data-filter="local" aria-pressed="false"><span data-i18n="wall.c_local">本机零费后期</span><i>6</i></button>
+        <button type="button" data-filter="gpu" aria-pressed="false"><span data-i18n="wall.c_gpu">本地显卡实测</span><i>5</i></button>
+      </div>
+
+      <div id="wall-grid" class="wall-grid">
+        <!-- 短剧与电影 -->
+        <article class="work" data-cat="drama">
+          <div class="work-media"><img src="assets/media/showcase/drama.webp" alt="仙侠漫剧 · 星河之上的对决" data-i18n-alt="w.drama.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_drama">短剧与电影</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.drama.t">仙侠漫剧 · 星河之上的对决</h3>
+            <p data-i18n="w.drama.d">从人物定妆、场景设定到分镜出图与成片剪辑，一句故事梗概交给漫剧总监接着做。</p>
+            <button class="work-copy" type="button" data-copy="做一集仙侠漫剧：白衣剑客与红甲将军在星河之上对决，国漫厚涂画风，先给我看人物定妆照和第 1 集样片。" data-copy-key="w.drama.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="drama">
+          <div class="work-media"><img src="assets/media/showcase/liveaction.webp" alt="真人质感短片 · 时空跳跃" data-i18n-alt="w.liveaction.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_drama">短剧与电影</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.liveaction.t">真人质感短片 · 时空跳跃</h3>
+            <p data-i18n="w.liveaction.d">老式实验室、两个人、一台旧电脑：电影感布光与镜头调度的真人风格短片。</p>
+            <button class="work-copy" type="button" data-copy="拍一条真人实拍质感的科幻短片：老式实验室里，穿白大褂的研究员指着旧电脑屏幕，发现了时空跳跃的线索，电影感布光，30 秒。" data-copy-key="w.liveaction.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="drama">
+          <div class="work-media"><img src="assets/media/showcase/crest-trough-poster.jpg" alt="科学诗电影 · 峰与谷" data-i18n-alt="w.crest.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_drama">短剧与电影</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.crest.t">科学诗电影 · 峰与谷</h3>
+            <p data-i18n="w.crest.d">同生于一道波的「峰」与「谷」的故事，2.39:1 宽银幕；片中每一帧画面、每一个音符均由代码生成。</p>
+            <button class="work-copy" type="button" data-copy="做一部科学诗电影《峰与谷》：同生于一道波的峰与谷一出生就被彼此推开，直到时间尽头正与负合而为一。2.39:1 宽银幕，画面和音乐全部用代码生成。" data-copy-key="w.crest.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="drama">
+          <div class="work-media"><img src="assets/media/showcase/replacement.webp" alt="角色替换 · 换主角不重拍" data-i18n-alt="w.replacement.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_drama">短剧与电影</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.replacement.t">角色替换 · 换主角不重拍</h3>
+            <p data-i18n="w.replacement.d">保留原镜头的场景与光影，把画面里的角色换成你指定的人物。</p>
+            <button class="work-copy" type="button" data-copy="把这段视频里的主角替换成我给的角色定妆照，场景、光影和镜头运动保持不变。" data-copy-key="w.replacement.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+
+        <!-- 商业与MV -->
+        <article class="work" data-cat="biz">
+          <div class="work-media"><img src="assets/media/showcase/commerce.webp" alt="产品广告 · 细节，值得靠近" data-i18n-alt="w.commerce.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_biz">商业与MV</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.commerce.t">产品广告 · 细节，值得靠近</h3>
+            <p data-i18n="w.commerce.d">虚构桌面音箱的材质特写广告：织物、陶瓷、金属，文案与版式一并完成。</p>
+            <button class="work-copy" type="button" data-copy="给一款桌面音箱做 15 秒产品广告：微距特写织物网面、陶瓷机身和金属旋钮，暖色极简风，文案「细节，值得靠近」。" data-copy-key="w.commerce.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="biz">
+          <div class="work-media"><img src="assets/media/showcase/original-mv.webp" alt="原创双语 MV · AI 写歌吐槽老板" data-i18n-alt="w.mv.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_biz">商业与MV</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.mv.t">原创双语 MV · AI 写歌吐槽老板</h3>
+            <p data-i18n="w.mv.d">从写歌词、原创音乐到 MV 成片，中英双语，大字幕跟着节奏走。</p>
+            <button class="work-copy" type="button" data-copy="写一首吐槽老板的中英双语说唱，配上二次元角色的动态 MV，要有大字幕和节奏卡点。" data-copy-key="w.mv.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="biz">
+          <div class="work-media"><img src="assets/media/showcase/tutorial.webp" alt="广告实操案例 · 三步完成一条广告" data-i18n-alt="w.tutorial.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_biz">商业与MV</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.tutorial.t">广告实操案例 · 三步完成一条广告</h3>
+            <p data-i18n="w.tutorial.d">选素材换背景、让产品动起来、一句文案配一段音乐，每一步都能照着做。</p>
+            <button class="work-copy" type="button" data-copy="用我这张产品透明图做一条 15 秒广告：换成深空绿背景，让产品缓慢悬浮转动，再配一句文案和一段 128 BPM 的原创配乐。" data-copy-key="w.tutorial.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="biz">
+          <div class="work-media"><img src="assets/media/showcase/batch.webp" alt="批量造物 · 一次铺满一整墙场景图" data-i18n-alt="w.batch.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_biz">商业与MV</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.batch.t">批量造物 · 一次铺满一整墙场景图</h3>
+            <p data-i18n="w.batch.d">多组提示词并发出图：校园、祭典、泳池、乐队……统一画风一次出齐。</p>
+            <button class="work-copy" type="button" data-copy="批量生成 24 张日系动画风格的校园生活场景图：运动会、夏日祭、游泳比赛、乐队排练、天文观测等，统一画风，16:9。" data-copy-key="w.batch.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+
+        <!-- 剪辑与特效 -->
+        <article class="work" data-cat="edit">
+          <div class="work-media"><img src="assets/media/showcase/mad.webp" alt="动漫 MAD · 节拍卡点混剪" data-i18n-alt="w.mad.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edit">剪辑与特效</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.mad.t">动漫 MAD · 节拍卡点混剪</h3>
+            <p data-i18n="w.mad.d">跟着音乐节拍卡点、调色、加转场的动漫混剪。</p>
+            <button class="work-copy" type="button" data-copy="把这些动画片段剪成一支 60 秒 MAD：按副歌节拍卡点，加速度线和红色光效转场，结尾定格。" data-copy-key="w.mad.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edit">
+          <div class="work-media"><img src="assets/media/showcase/remix.webp" alt="鬼畜整活 · 真香" data-i18n-alt="w.remix.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edit">剪辑与特效</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.remix.t">鬼畜整活 · 真香</h3>
+            <p data-i18n="w.remix.d">抠像贴纸、大号花字、重复卡点，把经典梗片段剪出节奏。</p>
+            <button class="work-copy" type="button" data-copy="把这段素材做成鬼畜视频：抠出人物头像做贴纸，关键台词配大号花字，跟着鼓点重复卡点。" data-copy-key="w.remix.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edit">
+          <div class="work-media"><img src="assets/media/showcase/highlight.webp" alt="高光集锦 · 着陆高光" data-i18n-alt="w.highlight.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edit">剪辑与特效</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.highlight.t">高光集锦 · 着陆高光</h3>
+            <p data-i18n="w.highlight.d">从多段素材里挑出关键时刻，分屏排版并配上说明字幕。</p>
+            <button class="work-copy" type="button" data-copy="把这几段探测器着陆的素材剪成 40 秒高光集锦：多画面分屏，关键时刻慢放，配说明字幕。" data-copy-key="w.highlight.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edit">
+          <div class="work-media"><img src="assets/media/showcase/vlog.webp" alt="旅行 Vlog · 旅行蒙太奇" data-i18n-alt="w.vlog.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edit">剪辑与特效</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.vlog.t">旅行 Vlog · 旅行蒙太奇</h3>
+            <p data-i18n="w.vlog.d">把零散的旅拍素材剪成有节奏的蒙太奇，配乐和字幕一起加好。</p>
+            <button class="work-copy" type="button" data-copy="把我的旅行素材剪成 60 秒 Vlog：先放山景空镜，再接人物镜头，配轻快音乐和地点字幕。" data-copy-key="w.vlog.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edit">
+          <div class="work-media"><img src="assets/media/showcase/ae.webp" alt="AE 动效 MV · AI 驱动 AE" data-i18n-alt="w.ae.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edit">剪辑与特效</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.ae.t">AE 动效 MV · AI 驱动 AE</h3>
+            <p data-i18n="w.ae.d">关键帧编排、多层合成、镜头与转场，角色立绘跟着音乐动起来。</p>
+            <button class="work-copy" type="button" data-copy="用 AE 给这组角色立绘做一段动效 MV：角色依次入场，彩色剪影转场，关键帧跟着音乐节拍走。" data-copy-key="w.ae.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edit">
+          <div class="work-media"><img src="assets/media/showcase/pixels.webp" alt="像素角色动画 · 像素角色，动起来" data-i18n-alt="w.pixels.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edit">剪辑与特效</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.pixels.t">像素角色动画 · 像素角色，动起来</h3>
+            <p data-i18n="w.pixels.d">把角色做成像素形象，并生成行走、工作、阅读、交谈等动作帧。</p>
+            <button class="work-copy" type="button" data-copy="把这两个角色做成像素小人，各出行走、工作、阅读、交谈四组动作帧，导出精灵图。" data-copy-key="w.pixels.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+
+        <!-- 教学与课件 -->
+        <article class="work" data-cat="edu">
+          <div class="work-media"><img src="assets/media/showcase/edu-physics.webp" alt="物理讲题 · 力指向哪里" data-i18n-alt="w.physics.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edu">教学与课件</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.physics.t">物理讲题 · 力指向哪里</h3>
+            <p data-i18n="w.physics.d">洛伦兹力的方向一步步画出来：公式、受力箭头与轨迹同步出现。</p>
+            <button class="work-copy" type="button" data-copy="把「带电粒子在匀强磁场中做圆周运动」讲成一段动画：先画磁场和速度，再用箭头标出洛伦兹力，说明为什么不做功、速率不变。" data-copy-key="w.physics.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edu">
+          <div class="work-media"><img src="assets/media/showcase/edu-math.webp" alt="数学讲题 · 把图翻译成式子" data-i18n-alt="w.math.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edu">教学与课件</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.math.t">数学讲题 · 把图翻译成式子</h3>
+            <p data-i18n="w.math.d">从割线到切线：y = x² 在 P(1,1) 处的斜率推导，图形和算式逐步对应。</p>
+            <button class="work-copy" type="button" data-copy="用动画讲清楚导数的定义：在 y = x² 上取点 P(1,1)，让割线慢慢变成切线，同步写出斜率 k 的化简过程。" data-copy-key="w.math.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edu">
+          <div class="work-media"><img src="assets/media/showcase/edu-poetry.webp" alt="诗词课件 · 江南秋景意境片" data-i18n-alt="w.poetry.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edu">教学与课件</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.poetry.t">诗词课件 · 江南秋景意境片</h3>
+            <p data-i18n="w.poetry.d">给古诗词配上贴合意境的画面，适合语文课导入。</p>
+            <button class="work-copy" type="button" data-copy="给一首写江南秋景的古诗做 30 秒意境短片：白墙黛瓦、枯枝残叶、水面倒影，配朗读和字幕。" data-copy-key="w.poetry.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edu">
+          <div class="work-media"><img src="assets/media/showcase/edu-table.webp" alt="拍题讲解 · 最大半径刚好到 b 点" data-i18n-alt="w.table.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edu">教学与课件</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.table.t">拍题讲解 · 最大半径刚好到 b 点</h3>
+            <p data-i18n="w.table.d">把一道题变成分步讲解：辅助线、几何关系、结论逐步出现。</p>
+            <button class="work-copy" type="button" data-copy="我拍了一道磁场边界的物理题，帮我做成分步讲解视频：先画俯视图，再用勾股定理求最大半径，每一步配字幕。" data-copy-key="w.table.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="edu">
+          <div class="work-media"><img src="assets/media/showcase/oscilloscope-poster.jpg" alt="高三物理专题 · 示波器" data-i18n-alt="w.osc.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_edu">教学与课件</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.osc.t">高三物理专题 · 示波器</h3>
+            <p data-i18n="w.osc.d">示波管结构、加速与偏转、扫描电压、波形合成与李萨如图形，再加三道典型题和一图总结；中文配音，字幕烧录。</p>
+            <button class="work-copy" type="button" data-copy="请把「示波器」这个高三物理专题做成一支精致的中文讲解视频：从示波管结构、加速与偏转讲到扫描电压、波形合成和李萨如图形，再讲三道典型题并给出一图总结。配中文配音和字幕，并做一个能拖动参数验证的交互网页。" data-copy-key="w.osc.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+
+        <!-- 本机零费后期 -->
+        <article class="work" data-cat="local">
+          <div class="work-media"><img src="assets/media/showcase/cutout.webp" alt="智能抠图 · 一键换底" data-i18n-alt="w.cutout.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_local">本机零费后期</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.cutout.t">智能抠图 · 一键换底</h3>
+            <p data-i18n="w.cutout.d">在本机抠出产品主体，深色、浅色背景随手换。</p>
+            <button class="work-copy" type="button" data-copy="把这张产品图抠出来，分别放到深蓝和米白两种纯色背景上，各导出一张。" data-copy-key="w.cutout.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="local">
+          <div class="work-media"><img src="assets/media/showcase/sky.webp" alt="智能换天 · 黄昏晚霞" data-i18n-alt="w.sky.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_local">本机零费后期</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.sky.t">智能换天 · 黄昏晚霞</h3>
+            <p data-i18n="w.sky.d">找出天空区域并替换，建筑边缘和整体色调一起匹配。</p>
+            <button class="work-copy" type="button" data-copy="把这张房子照片的天空换成橙红色晚霞，建筑边缘要干净，整体色调跟着变暖。" data-copy-key="w.sky.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="local">
+          <div class="work-media"><img src="assets/media/showcase/upscale.webp" alt="超分放大 · 细节保留" data-i18n-alt="w.upscale.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_local">本机零费后期</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.upscale.t">超分放大 · 细节保留</h3>
+            <p data-i18n="w.upscale.d">低清图放大 2 倍，发丝与五官保持原貌，左右对照一目了然。</p>
+            <button class="work-copy" type="button" data-copy="把这张人像放大 2 倍，保留发丝和眼睛细节，不要改变长相，给我左右对比图。" data-copy-key="w.upscale.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="local">
+          <div class="work-media"><img src="assets/media/showcase/beauty.webp" alt="人像美颜 · 自然修饰" data-i18n-alt="w.beauty.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_local">本机零费后期</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.beauty.t">人像美颜 · 自然修饰</h3>
+            <p data-i18n="w.beauty.d">肤色与瑕疵轻度修饰，保留皮肤纹理，前后对照。</p>
+            <button class="work-copy" type="button" data-copy="给这张人像做自然美颜：轻度磨皮、提亮肤色，保留雀斑和皮肤纹理，输出前后对比。" data-copy-key="w.beauty.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="local">
+          <div class="work-media"><img src="assets/media/showcase/privacy.webp" alt="隐私打码 · 人脸马赛克" data-i18n-alt="w.privacy.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_local">本机零费后期</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.privacy.t">隐私打码 · 人脸马赛克</h3>
+            <p data-i18n="w.privacy.d">定位人脸并打码，适合街拍和截图分享前处理。</p>
+            <button class="work-copy" type="button" data-copy="把这段视频里路人的脸全部打上马赛克，主角不打码。" data-copy-key="w.privacy.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="local">
+          <div class="work-media"><img src="assets/media/showcase/ocr.webp" alt="画面识字 · 本地 OCR" data-i18n-alt="w.ocr.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_local">本机零费后期</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.ocr.t">画面识字 · 本地 OCR</h3>
+            <p data-i18n="w.ocr.d">在本机把图片里的文字提取成可复制的文本，不调用收费识别接口。</p>
+            <button class="work-copy" type="button" data-copy="把这张订单截图里的文字全部提取出来，按原来的行整理成文本。" data-copy-key="w.ocr.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+
+        <!-- 本地显卡实测：如实写明适用边界 -->
+        <article class="work" data-cat="gpu">
+          <div class="work-media"><img src="assets/media/showcase/h3-emotion.webp" alt="本地显卡实测 · 近景表情样片" data-i18n-alt="w.h3emotion.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_gpu">本地显卡实测</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.h3emotion.t">近景表情样片</h3>
+            <p data-i18n="w.h3emotion.d">用来核对近景表情变化，标记为「需审片」。</p>
+            <button class="work-copy" type="button" data-copy="用本地显卡跑一段 4 秒近景表情样片：女生坐在窗边，从低头到抬眼微笑，832×480。" data-copy-key="w.h3emotion.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="gpu">
+          <div class="work-media"><img src="assets/media/showcase/h3-ecommerce.webp" alt="本地显卡实测 · 电商粗 B-roll" data-i18n-alt="w.h3ecom.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_gpu">本地显卡实测</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.h3ecom.t">电商粗 B-roll</h3>
+            <p data-i18n="w.h3ecom.d">伸手、握瓶、抬起的顺序大体可辨；标签和手指仍要人工核对。</p>
+            <button class="work-copy" type="button" data-copy="用本地显卡跑一段 4 秒电商 B-roll：模特伸手拿起桌上的精华瓶展示给镜头，832×480。" data-copy-key="w.h3ecom.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="gpu">
+          <div class="work-media"><img src="assets/media/showcase/h3-anime.webp" alt="本地显卡实测 · 动漫动作预演" data-i18n-alt="w.h3anime.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_gpu">本地显卡实测</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.h3anime.t">动漫动作预演</h3>
+            <p data-i18n="w.h3anime.d">侧步到抬手的顺序可作预演；长舞和复杂手部未证明。</p>
+            <button class="work-copy" type="button" data-copy="用本地显卡跑一段 4 秒动漫动作预演：银发少女侧步后抬起右手，纯色背景，832×480。" data-copy-key="w.h3anime.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="gpu">
+          <div class="work-media"><img src="assets/media/showcase/h3-cinematic.webp" alt="本地显卡实测 · 雨夜街景气氛" data-i18n-alt="w.h3cine.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_gpu">本地显卡实测</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.h3cine.t">雨夜街景气氛</h3>
+            <p data-i18n="w.h3cine.d">适合做过渡层；稳定运镜和雨势细节仍未证明。</p>
+            <button class="work-copy" type="button" data-copy="用本地显卡跑一段 4 秒雨夜街景：霓虹招牌倒映在湿地面上，一个撑伞的行人走过，832×480。" data-copy-key="w.h3cine.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+        <article class="work" data-cat="gpu">
+          <div class="work-media"><img src="assets/media/showcase/h3-effects.webp" alt="本地显卡实测 · 黑底粒子层" data-i18n-alt="w.h3fx.t" width="640" height="360" loading="lazy" decoding="async"/><span class="work-tag" data-i18n="wall.c_gpu">本地显卡实测</span></div>
+          <div class="work-body">
+            <h3 data-i18n="w.h3fx.t">黑底粒子层</h3>
+            <p data-i18n="w.h3fx.d">可尝试用叠加模式合成；原片没有 alpha 通道。</p>
+            <button class="work-copy" type="button" data-copy="用本地显卡跑一段 4 秒黑底金色粒子光带，方便后期用叠加模式合成，832×480。" data-copy-key="w.h3fx.p" data-i18n="wall.copy">复制同款一句话需求</button>
+          </div>
+        </article>
+      </div>
+      <p class="wall-note fine" data-cat-note="gpu" data-i18n="wall.gpu_note"><b>本地显卡实测说明：</b>MiniMax H3 Turbo8 · Windows + RTX 2070 SUPER（8 GiB）本地输出 · 832×480 · 24fps · 每段 4.46 秒无声。这是同一台机器上的本地解码结果，仍需按正常速度审片；不代表成功率、复杂动作或完整 MV 质量。</p>
+      <p class="wall-note fine" data-i18n="wall.note">复制到的是可以直接粘贴的示例需求；实际成片取决于你的素材和所选模型。含第三方素材的混剪仅作剪辑能力演示。</p>
+
+      <!-- 千面：10 套界面，同一份数据，换一种操作方式 -->
+      <div id="faces" class="faces">
+        <div class="head rv">
+          <span class="eyebrow" data-i18n="faces.eyebrow">FACES · 千面 10 套界面</span>
+          <h2 data-i18n="faces.title">同一个软件，十种用法。</h2>
+          <p class="lead" data-i18n="faces.lead">千面不只是换颜色，而是换一整套布局和操作方式。按 <kbd>F2</kbd> 随时切换，对话、连接和作品全部共用。0.7.0 新增第 10 套「二次元·痛窗」，立绘和布局可以自己定制。</p>
+        </div>
+        <div class="face-ui rv">
+          <div id="face-tabs" class="face-tabs" role="tablist" aria-label="千面界面" data-i18n-aria-label="a11y.faces">
+            <button role="tab" type="button" id="ft-studio" aria-selected="true" aria-controls="face-panel" data-face="studio" data-shot="assets/media/showcase/app/face-studio.webp" data-badge="N" data-badge-key="faces.b_default" data-badge-label="默认" data-tag="左侧导航，对话与创作台并排。" data-how="左边切页面，中间对话，右边看成果。"><span data-i18n="face.studio.n">经典</span></button>
+            <button role="tab" type="button" id="ft-oneline" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="oneline" data-badge="N" data-badge-key="faces.b_oneline" data-badge-label="一句话出片" data-tag="一个大输入框、进度和成品墙，其他都收在抽屉里。" data-how="写一句想做的漫剧或视频，按开始；做好的作品排在下面的成品墙。"><span data-i18n="face.oneline.n">一句话</span></button>
+            <button role="tab" type="button" id="ft-focus" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="focus" data-shot="assets/media/showcase/app/face-focus.webp" data-badge="N" data-badge-key="faces.b_focus" data-badge-label="极简" data-tag="只有一个输入框，其他都从对话里叫出来。" data-how="直接说想做什么；创作台、配置都以抽屉滑出。"><span data-i18n="face.focus.n">对话</span></button>
+            <button role="tab" type="button" id="ft-bento" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="bento" data-shot="assets/media/showcase/app/face-bento.webp" data-badge="N" data-badge-key="faces.b_bento" data-badge-label="一屏看完" data-tag="便当盒式磁贴，没有导航栏。" data-how="每块磁贴就是一个功能，点开全屏，再点返回。"><span data-i18n="face.bento.n">磁贴</span></button>
+            <button role="tab" type="button" id="ft-pocket" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="pocket" data-shot="assets/media/showcase/app/face-pocket.webp" data-badge="N" data-badge-key="faces.b_pocket" data-badge-label="大按钮" data-tag="像手机 App，底部标签栏，最适合新手。" data-how="底部四个大按钮，一次只做一件事。"><span data-i18n="face.pocket.n">口袋</span></button>
+            <button role="tab" type="button" id="ft-desk" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="desk" data-shot="assets/media/showcase/app/face-desk.webp" data-badge="R" data-badge-key="faces.b_desk" data-badge-label="多窗口" data-tag="像电脑桌面，对话和创作台并排拖拽。" data-how="底部 Dock 打开窗口，拖动标题栏摆位置，双击最大化。"><span data-i18n="face.desk.n">桌面</span></button>
+            <button role="tab" type="button" id="ft-console" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="console" data-shot="assets/media/showcase/app/face-console.webp" data-badge="R" data-badge-key="faces.b_console" data-badge-label="键盘优先" data-tag="一行命令搞定一切。" data-how="输入 /帮助 看命令；直接打字就是开始创作。"><span data-i18n="face.console.n">终端</span></button>
+            <button role="tab" type="button" id="ft-cockpit" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="cockpit" data-shot="assets/media/showcase/app/face-cockpit.webp" data-badge="SR" data-badge-key="faces.b_secret" data-badge-label="隐藏款" data-tag="HUD 仪表盘，花费、任务、作品实时读数。" data-how="圆形仪表看花费，雷达看进行中的任务，一键起飞新创作。"><span data-i18n="face.cockpit.n">驾驶舱</span></button>
+            <button role="tab" type="button" id="ft-arcade" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="arcade" data-shot="assets/media/showcase/app/face-arcade.webp" data-badge="SSR" data-badge-key="faces.b_secret" data-badge-label="隐藏款" data-tag="8-bit 像素冒险，用方向键选菜单。" data-how="↑↓ 选择，Enter 确定，Esc 返回；像玩游戏一样创作。"><span data-i18n="face.arcade.n">街机</span></button>
+            <button role="tab" type="button" id="ft-itawin" class="is-new" aria-selected="false" tabindex="-1" aria-controls="face-panel" data-face="itawin" data-badge="0.7.0" data-badge-key="faces.b_new" data-badge-label="新增" data-tag="高自由度的二次元界面，角色立绘和布局都能自己定制。" data-how="在千面里选「二次元·痛窗」，按喜好摆放立绘和各个面板；数据和其余界面共用。"><span data-i18n="face.itawin.n">二次元·痛窗</span></button>
+          </div>
+          <div id="face-panel" class="face-panel" role="tabpanel" aria-labelledby="ft-studio">
+            <div class="face-screen">
+              <img id="face-img" src="assets/media/showcase/app/face-studio.webp" alt="千面界面截图" data-i18n-alt="faces.shot_alt" width="1280" height="792" loading="lazy" decoding="async"/>
+              <!-- 「一句话」暂无实机截图，用示意图表达布局 -->
+              <div class="face-art art-oneline" data-face-art="oneline" hidden aria-hidden="true">
+                <div class="ao-input"><span data-i18n="faces.art_oneline">写一句想做的漫剧或视频…</span><i></i></div>
+                <div class="ao-bar"><i></i></div>
+                <div class="ao-wall"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+              <!-- 「二次元·痛窗」示意图：右侧立绘位 + 可自由摆放的布局框 -->
+              <div class="face-art art-itawin" data-face-art="itawin" hidden aria-hidden="true">
+                <svg viewBox="0 0 640 396" preserveAspectRatio="xMidYMid slice">
+                  <rect class="it-bg" width="640" height="396"/>
+                  <g class="it-stripes"><path d="M-40 396 200 0h60L20 396zM120 396 360 0h30L150 396zM430 396 670 0h40L470 396z"/></g>
+                  <rect class="it-card" x="34" y="40" width="330" height="62" rx="14"/>
+                  <rect class="it-line" x="54" y="60" width="180" height="9" rx="4.5"/><rect class="it-line dim" x="54" y="78" width="250" height="7" rx="3.5"/>
+                  <rect class="it-card" x="34" y="118" width="330" height="150" rx="14"/>
+                  <rect class="it-bubble" x="54" y="138" width="170" height="26" rx="13"/><rect class="it-bubble me" x="170" y="176" width="174" height="26" rx="13"/><rect class="it-bubble" x="54" y="214" width="210" height="26" rx="13"/>
+                  <rect class="it-card" x="34" y="284" width="330" height="72" rx="14"/>
+                  <rect class="it-line dim" x="54" y="306" width="210" height="8" rx="4"/><rect class="it-send" x="300" y="318" width="46" height="24" rx="12"/>
+                  <!-- 立绘位：抽象剪影，不指向任何具体角色 -->
+                  <g class="it-fig">
+                    <path class="it-hair" d="M452 150c-6-58 30-98 78-98s86 40 78 100c-3 30-6 70 8 120-26 6-46-6-52-30h-66c-6 26-26 36-54 30 14-48 12-90 8-122z"/>
+                    <ellipse class="it-face" cx="530" cy="140" rx="46" ry="50"/>
+                    <path class="it-hair" d="M482 132c10-34 44-52 84-34 6 10 10 22 10 36-30-4-52-14-66-30-6 14-16 24-28 28z"/>
+                    <path class="it-body" d="M470 396c0-76 20-136 60-136s62 60 62 136z"/>
+                    <path class="it-ribbon" d="M512 262l18 20 18-20 6 34-24-10-24 10z"/>
+                    <circle class="it-eye" cx="512" cy="146" r="5"/><circle class="it-eye" cx="550" cy="146" r="5"/>
+                  </g>
+                  <!-- 可拖动的布局框与手柄 -->
+                  <rect class="it-frame" x="418" y="34" width="208" height="352" rx="10"/>
+                  <g class="it-handle"><rect x="412" y="28" width="12" height="12" rx="3"/><rect x="620" y="28" width="12" height="12" rx="3"/><rect x="412" y="380" width="12" height="12" rx="3"/><rect x="620" y="380" width="12" height="12" rx="3"/></g>
+                </svg>
+              </div>
+              <span class="face-art-note" id="face-art-note" hidden data-i18n="faces.art_note">示意图 · 以软件内实际界面为准</span>
+            </div>
+            <div class="face-info">
+              <span id="face-badge" class="face-badge">N · 默认</span>
+              <h3 id="face-name">经典</h3>
+              <p id="face-tag">左侧导航，对话与创作台并排。</p>
+              <p id="face-how" class="fine">左边切页面，中间对话，右边看成果。</p>
+              <p class="fine face-foot" data-i18n="faces.foot">驾驶舱和街机是扭蛋解锁的隐藏款；所有界面共用同一份数据，随时切换、随时换回。</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -171,25 +604,25 @@
         <article class="step rv">
           <div class="no">01</div>
           <h3 data-i18n="start.s1_t">下载并安装</h3>
-          <p data-i18n="start.s1_d">在下方选择 Windows 或 macOS 版本。Windows 双击安装无需管理员权限；Mac 拖进「应用程序」，首次打开按 <a href="#mac">这里的方法</a> 放行一次。</p>
-          <div class="actions"><a class="btn btn-primary" href="#download">选择系统下载</a></div>
+          <p data-i18n="start.s1_d">在下方选择 Windows 或 macOS 版本。Windows 双击安装无需管理员权限；Mac 拖进「应用程序」，首次打开按 <a href="#mac">这里的方法</a> 放行一次。浏览器提示「通常不会下载」时，点 <b>…</b> → <b>保留</b>，<a href="#keep-guide">看图解</a>。</p>
+          <div class="actions"><a class="btn btn-primary" href="#download" data-i18n="start.s1_btn">选择系统下载</a></div>
         </article>
         <article class="step rv">
           <div class="no">02</div>
           <h3 data-i18n="start.s2_t">登录账号或连接 API 站点</h3>
           <p id="step2-text" data-i18n="start.s2_d">可以直接注册登录官方账号充值或核销兑换码；也可以连接任意 OpenAI / new-api 兼容站点（支持手动填地址和 Key，或一键导入）。</p>
-          <div class="actions"><a class="btn btn-ghost" href="#connect">查看两种接法</a></div>
+          <div class="actions"><a class="btn btn-ghost" href="#connect" data-i18n="start.s2_btn">查看两种接法</a></div>
         </article>
         <article class="step rv">
           <div class="no">03</div>
           <h3 data-i18n="start.s3_t">开始第一个创作</h3>
           <p data-i18n="start.s3_d">回到首页输入你的想法，成品自动保存到「作品」和本机目录。点任意一句复制试用：</p>
           <div class="prompts">
-            <button class="prompt" type="button" data-copy="帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置" data-copy-en="Draw a cozy orange cat portrait in warm lighting" data-copy-ja="暖かい光のかわいい茶トラ猫のアイコンを描いて" data-i18n="start.p1">画一张新品咖啡海报</button>
-            <button class="prompt" type="button" data-copy="把这张图做成 5 秒视频，镜头缓慢推近" data-copy-en="Turn this image into a 5-second video with a slow dolly-in" data-copy-ja="この画像をゆっくりズームインする 5 秒動画にして" data-i18n="start.p2">把图片做成 5 秒视频</button>
-            <button class="prompt" type="button" data-copy="做一个三格小漫剧：主角是一只想当程序员的橘猫" data-copy-en="Make a 3-panel anime short about a cat learning to code" data-copy-ja="プログラマーを目指す猫の 3 コマ漫画動画を作って" data-i18n="start.p3">做一个三格小漫剧</button>
-            <button class="prompt" type="button" data-copy="写一首轻快主题曲，导出伴奏、LRC 歌词和 1080p 歌词视频" data-copy-en="Write a bright pop song with lyrics, backing track and 1080p lyric video" data-copy-ja="明るいポップソングを作詞・作曲し、伴奏と 1080p 歌詞動画まで出力して" data-i18n="start.p4">原创歌曲 + 歌词视频</button>
-            <button class="prompt" type="button" data-copy="把这个文件夹里的产品照片整理好，做一份 8 页的产品介绍 PPT" data-copy-en="Edit my travel clips into a 60-second Vlog with music and subtitles" data-copy-ja="旅行の素材を BGM・字幕付きの 60 秒 Vlog に編集して" data-i18n="start.p5">照片整理成 8 页 PPT</button>
+            <button class="prompt" type="button" data-copy="帮我做一张新品焦糖拿铁海报，暖色调，留出标题位置" data-copy-key="start.c1" data-i18n="start.p1">画一张新品咖啡海报</button>
+            <button class="prompt" type="button" data-copy="把这张图做成 5 秒视频，镜头缓慢推近" data-copy-key="start.c2" data-i18n="start.p2">把图片做成 5 秒视频</button>
+            <button class="prompt" type="button" data-copy="做一个三格小漫剧：主角是一只想当程序员的橘猫" data-copy-key="start.c3" data-i18n="start.p3">做一个三格小漫剧</button>
+            <button class="prompt" type="button" data-copy="写一首轻快主题曲，导出伴奏、LRC 歌词和 1080p 歌词视频" data-copy-key="start.c4" data-i18n="start.p4">原创歌曲 + 歌词视频</button>
+            <button class="prompt" type="button" data-copy="把这个文件夹里的产品照片整理好，做一份 8 页的产品介绍 PPT" data-copy-key="start.c5" data-i18n="start.p5">照片整理成 8 页 PPT</button>
           </div>
         </article>
       </div>
@@ -200,7 +633,6 @@
   </section>
 
   <!-- 超级导演重磅展示（含 27 秒合集视频 + 11 张起始卡） -->
-  
 <section id="super" class="section dark">
   <div class="wrap super">
     <div class="rv">
@@ -243,22 +675,21 @@
         <span data-i18n="super.how_text">在首页切到「超级导演」标签，输入故事或先选「看完样片再挑风格卡」，确认免费样片和费用清单后一键生成并自动精剪配乐。</span>
       </div>
       <div class="covers" aria-label="超级导演 11 张起始卡">
-        <figure><img src="assets/media/cards/super/hk-narrative-mv.webp" alt="港风叙事 MV" width="112" height="150"/><figcaption>港风叙事 MV</figcaption></figure>
-<figure><img src="assets/media/cards/super/luxury-commercial-ad.webp" alt="高奢实拍广告" width="112" height="150"/><figcaption>高奢实拍广告</figcaption></figure>
-<figure><img src="assets/media/cards/super/meme-hook.webp" alt="玩梗带钩子" width="112" height="150"/><figcaption>玩梗带钩子</figcaption></figure>
-<figure><img src="assets/media/cards/super/guofeng.webp" alt="国风唯美" width="112" height="150"/><figcaption>国风唯美</figcaption></figure>
-<figure><img src="assets/media/cards/super/serious.webp" alt="严肃高级" width="112" height="150"/><figcaption>严肃高级</figcaption></figure>
-<figure><img src="assets/media/cards/super/epic.webp" alt="巨构震撼" width="112" height="150"/><figcaption>巨构震撼</figcaption></figure>
-<figure><img src="assets/media/cards/super/slow-build.webp" alt="慢积累递进" width="112" height="150"/><figcaption>慢积累递进</figcaption></figure>
-<figure><img src="assets/media/cards/super/absurd.webp" alt="搞笑抽象" width="112" height="150"/><figcaption>搞笑抽象</figcaption></figure>
-<figure><img src="assets/media/cards/super/rise-after-fall.webp" alt="欲扬先抑" width="112" height="150"/><figcaption>欲扬先抑</figcaption></figure>
-<figure><img src="assets/media/cards/super/emotion-first.webp" alt="情绪优先" width="112" height="150"/><figcaption>情绪优先</figcaption></figure>
-<figure><img src="assets/media/cards/super/restrained-duet.webp" alt="克制对手戏" width="112" height="150"/><figcaption>克制对手戏</figcaption></figure>
+        <figure><img src="assets/media/cards/super/hk-narrative-mv.webp" alt="港风叙事 MV" data-i18n-alt="card.hk-narrative-mv" width="112" height="150"/><figcaption data-i18n="card.hk-narrative-mv">港风叙事 MV</figcaption></figure>
+<figure><img src="assets/media/cards/super/luxury-commercial-ad.webp" alt="高奢实拍广告" data-i18n-alt="card.luxury-commercial-ad" width="112" height="150"/><figcaption data-i18n="card.luxury-commercial-ad">高奢实拍广告</figcaption></figure>
+<figure><img src="assets/media/cards/super/meme-hook.webp" alt="玩梗带钩子" data-i18n-alt="card.meme-hook" width="112" height="150"/><figcaption data-i18n="card.meme-hook">玩梗带钩子</figcaption></figure>
+<figure><img src="assets/media/cards/super/guofeng.webp" alt="国风唯美" data-i18n-alt="card.guofeng" width="112" height="150"/><figcaption data-i18n="card.guofeng">国风唯美</figcaption></figure>
+<figure><img src="assets/media/cards/super/serious.webp" alt="严肃高级" data-i18n-alt="card.serious" width="112" height="150"/><figcaption data-i18n="card.serious">严肃高级</figcaption></figure>
+<figure><img src="assets/media/cards/super/epic.webp" alt="巨构震撼" data-i18n-alt="card.epic" width="112" height="150"/><figcaption data-i18n="card.epic">巨构震撼</figcaption></figure>
+<figure><img src="assets/media/cards/super/slow-build.webp" alt="慢积累递进" data-i18n-alt="card.slow-build" width="112" height="150"/><figcaption data-i18n="card.slow-build">慢积累递进</figcaption></figure>
+<figure><img src="assets/media/cards/super/absurd.webp" alt="搞笑抽象" data-i18n-alt="card.absurd" width="112" height="150"/><figcaption data-i18n="card.absurd">搞笑抽象</figcaption></figure>
+<figure><img src="assets/media/cards/super/rise-after-fall.webp" alt="欲扬先抑" data-i18n-alt="card.rise-after-fall" width="112" height="150"/><figcaption data-i18n="card.rise-after-fall">欲扬先抑</figcaption></figure>
+<figure><img src="assets/media/cards/super/emotion-first.webp" alt="情绪优先" data-i18n-alt="card.emotion-first" width="112" height="150"/><figcaption data-i18n="card.emotion-first">情绪优先</figcaption></figure>
+<figure><img src="assets/media/cards/super/restrained-duet.webp" alt="克制对手戏" data-i18n-alt="card.restrained-duet" width="112" height="150"/><figcaption data-i18n="card.restrained-duet">克制对手戏</figcaption></figure>
       </div>
     </div>
   </div>
 </section>
-
 
   <!-- 12 大核心功能（每项：一句大白话 + 怎么用）+ 风格卡跑马灯 -->
   
@@ -275,7 +706,7 @@
     <div class="feat-grid">
       <!-- 1. 漫剧总监 -->
       <article class="feat wide rv">
-        <div class="feat-media"><div class="mosaic"><img src="assets/media/cards/manju/jp-cel.webp" alt="日系赛璐璐" loading="lazy"/><img src="assets/media/cards/manju/guofeng-autumn.webp" alt="国风秋意" loading="lazy"/><img src="assets/media/cards/manju/xianxia-3d.webp" alt="国漫 3D 仙侠" loading="lazy"/><img src="assets/media/cards/manju/webtoon.webp" alt="韩漫条漫" loading="lazy"/><img src="assets/media/cards/manju/hk-film.webp" alt="港风胶片" loading="lazy"/><img src="assets/media/cards/manju/pixar-chibi.webp" alt="皮克斯式 3D Q 版" loading="lazy"/><img src="assets/media/cards/manju/ink-wash.webp" alt="水墨淡彩" loading="lazy"/><img src="assets/media/cards/manju/us-comic.webp" alt="美漫粗线" loading="lazy"/></div></div>
+        <div class="feat-media"><div class="mosaic"><img src="assets/media/cards/manju/jp-cel.webp" alt="日系赛璐璐" data-i18n-alt="card.jp-cel" loading="lazy"/><img src="assets/media/cards/manju/guofeng-autumn.webp" alt="国风秋意" data-i18n-alt="card.guofeng-autumn" loading="lazy"/><img src="assets/media/cards/manju/xianxia-3d.webp" alt="国漫 3D 仙侠" data-i18n-alt="card.xianxia-3d" loading="lazy"/><img src="assets/media/cards/manju/webtoon.webp" alt="韩漫条漫" data-i18n-alt="card.webtoon" loading="lazy"/><img src="assets/media/cards/manju/hk-film.webp" alt="港风胶片" data-i18n-alt="card.hk-film" loading="lazy"/><img src="assets/media/cards/manju/pixar-chibi.webp" alt="皮克斯式 3D Q 版" data-i18n-alt="card.pixar-chibi" loading="lazy"/><img src="assets/media/cards/manju/ink-wash.webp" alt="水墨淡彩" data-i18n-alt="card.ink-wash" loading="lazy"/><img src="assets/media/cards/manju/us-comic.webp" alt="美漫粗线" data-i18n-alt="card.us-comic" loading="lazy"/></div></div>
         <div class="feat-body">
           <span class="kicker" data-i18n="f.manju.k">STORYBOARD &amp; DRAMA</span>
           <h3 data-i18n="f.manju.t">漫剧总监</h3>
@@ -305,7 +736,7 @@
 
       <!-- 3. 超级导演 -->
       <article class="feat rv">
-        <div class="feat-media"><div class="mosaic m3"><img src="assets/media/cards/super/hk-narrative-mv.webp" alt="港风叙事 MV" loading="lazy"/><img src="assets/media/cards/super/luxury-commercial-ad.webp" alt="高奢实拍广告" loading="lazy"/><img src="assets/media/cards/super/meme-hook.webp" alt="玩梗带钩子" loading="lazy"/><img src="assets/media/cards/super/guofeng.webp" alt="国风唯美" loading="lazy"/><img src="assets/media/cards/super/serious.webp" alt="严肃高级" loading="lazy"/><img src="assets/media/cards/super/epic.webp" alt="巨构震撼" loading="lazy"/></div></div>
+        <div class="feat-media"><div class="mosaic m3"><img src="assets/media/cards/super/hk-narrative-mv.webp" alt="港风叙事 MV" data-i18n-alt="card.hk-narrative-mv" loading="lazy"/><img src="assets/media/cards/super/luxury-commercial-ad.webp" alt="高奢实拍广告" data-i18n-alt="card.luxury-commercial-ad" loading="lazy"/><img src="assets/media/cards/super/meme-hook.webp" alt="玩梗带钩子" data-i18n-alt="card.meme-hook" loading="lazy"/><img src="assets/media/cards/super/guofeng.webp" alt="国风唯美" data-i18n-alt="card.guofeng" loading="lazy"/><img src="assets/media/cards/super/serious.webp" alt="严肃高级" data-i18n-alt="card.serious" loading="lazy"/><img src="assets/media/cards/super/epic.webp" alt="巨构震撼" data-i18n-alt="card.epic" loading="lazy"/></div></div>
         <div class="feat-body">
           <span class="kicker" data-i18n="f.super.k">DIRECTING ENGINE</span>
           <h3 data-i18n="f.super.t">超级导演</h3>
@@ -316,7 +747,7 @@
 
       <!-- 4. 制图总监 -->
       <article class="feat wide rv">
-        <div class="feat-media"><div class="mosaic"><img src="assets/media/cards/design/design-bold.webp" alt="潮流大字" loading="lazy"/><img src="assets/media/cards/design/design-collage.webp" alt="温暖手作拼贴" loading="lazy"/><img src="assets/media/cards/design/design-commercial-2.webp" alt="明亮商业摄影" loading="lazy"/><img src="assets/media/cards/design/design-editorial-2.webp" alt="克制编辑" loading="lazy"/><img src="assets/media/cards/design/design-oriental.webp" alt="东方留白" loading="lazy"/><img src="assets/media/cards/design/design-retro.webp" alt="复古印刷" loading="lazy"/><img src="assets/media/cards/design/design-tech.webp" alt="科技几何" loading="lazy"/><img src="assets/media/cards/design/design-flat.webp" alt="清新扁平" loading="lazy"/></div></div>
+        <div class="feat-media"><div class="mosaic"><img src="assets/media/cards/design/design-bold.webp" alt="潮流大字" data-i18n-alt="card.design-bold" loading="lazy"/><img src="assets/media/cards/design/design-collage.webp" alt="温暖手作拼贴" data-i18n-alt="card.design-collage" loading="lazy"/><img src="assets/media/cards/design/design-commercial-2.webp" alt="明亮商业摄影" data-i18n-alt="card.design-commercial-2" loading="lazy"/><img src="assets/media/cards/design/design-editorial-2.webp" alt="克制编辑" data-i18n-alt="card.design-editorial-2" loading="lazy"/><img src="assets/media/cards/design/design-oriental.webp" alt="东方留白" data-i18n-alt="card.design-oriental" loading="lazy"/><img src="assets/media/cards/design/design-retro.webp" alt="复古印刷" data-i18n-alt="card.design-retro" loading="lazy"/><img src="assets/media/cards/design/design-tech.webp" alt="科技几何" data-i18n-alt="card.design-tech" loading="lazy"/><img src="assets/media/cards/design/design-flat.webp" alt="清新扁平" data-i18n-alt="card.design-flat" loading="lazy"/></div></div>
         <div class="feat-body">
           <span class="kicker" data-i18n="f.design.k">VISUAL DESIGN &amp; PS</span>
           <h3 data-i18n="f.design.t">制图总监</h3>
@@ -460,7 +891,7 @@
       <article class="feat rv">
         <div class="feat-media">
           <div class="mock">
-            <div class="bar"><i></i>多内核热切 · 号池自动接力</div>
+            <div class="bar"><i></i>五内核热切 · 多账号号池自动换号</div>
             <div class="chiprow">
               <span class="chip on">Codex</span><span class="chip on">Claude Code</span>
               <span class="chip">Devin CLI</span><span class="chip">Gemini</span>
@@ -472,7 +903,7 @@
         <div class="feat-body">
           <span class="kicker" data-i18n="f.pool.k">ENGINES &amp; FAILOVER</span>
           <h3 data-i18n="f.pool.t">多内核与号池接力</h3>
-          <p class="plain" data-i18n="f.pool.d">Codex、Claude Code、Devin、Gemini 等多内核任选，任务跑一半也能随时换内核和模型；多条连接排成号池，额度用完或拥挤时自动接力不中断。</p>
+          <p class="plain" data-i18n="f.pool.d">Codex、Claude Code、Devin、Gemini 等多内核任选，任务跑一半也能随时换内核和模型；多条连接排成号池，额度用完或拥挤时自动接力不中断。0.7.0 起五大内核都支持多账号号池自动换号。</p>
           <div class="how"><b data-i18n="feat.how">怎么用</b><p data-i18n="f.pool.h">在「配置 → 连接 / 智能体内核」排好顺序并打开「额度接力」，日常干活遇到限流自动切换，恢复后自动切回。</p></div>
         </div>
       </article>
@@ -481,7 +912,7 @@
       <article class="feat rv">
         <div class="feat-media">
           <div class="mock">
-            <div class="bar"><i></i>计划卡 · 透明拆解每一步</div>
+            <div class="bar"><i></i>三态计划卡 · 透明拆解每一步</div>
             <div class="task done">01 整理素材与撰写脚本</div>
             <div class="task done">02 生成关键帧与分镜图</div>
             <div class="task now">03 剪辑配乐与烧录字幕（随时可插话）</div>
@@ -491,7 +922,7 @@
         <div class="feat-body">
           <span class="kicker" data-i18n="f.plan.k">TASK ORCHESTRATION</span>
           <h3 data-i18n="f.plan.t">计划卡与实时插话</h3>
-          <p class="plain" data-i18n="f.plan.d">大任务自动拆成清晰的步骤计划卡，做到哪一步一眼看清；多件事并行有值班卡，按 Ctrl+Enter 插话立即优先，已做完的成果全保留。</p>
+          <p class="plain" data-i18n="f.plan.d">大任务自动拆成清晰的步骤计划卡，待办、进行中、已完成三种状态一眼看清（0.7.0 起所有内核统一）；多件事并行有值班卡，按 Ctrl+Enter 插话立即优先，已做完的成果全保留。</p>
           <div class="how"><b data-i18n="feat.how">怎么用</b><p data-i18n="f.plan.h">把复杂目标直接发到对话里，先看一眼计划卡确认步骤；过程中随时补充要求，它会带着已有文件顺着改。</p></div>
         </div>
       </article>
@@ -501,35 +932,39 @@
 
     <div class="marquee rv" aria-label="内置风格卡画廊">
       <p class="fine" style="margin-bottom:14px;text-align:center" data-i18n="marquee.title">内置风格卡一览 · 漫剧总监与制图总监可直接套用</p>
-      <div class="track"><figure><img src="assets/media/cards/manju/jp-cel.webp" alt="日系赛璐璐" width="168" height="224"/><figcaption>日系赛璐璐</figcaption></figure><figure><img src="assets/media/cards/manju/guofeng-autumn.webp" alt="国风秋意" width="168" height="224"/><figcaption>国风秋意</figcaption></figure><figure><img src="assets/media/cards/manju/xianxia-3d.webp" alt="国漫 3D 仙侠" width="168" height="224"/><figcaption>国漫 3D 仙侠</figcaption></figure><figure><img src="assets/media/cards/manju/webtoon.webp" alt="韩漫条漫" width="168" height="224"/><figcaption>韩漫条漫</figcaption></figure><figure><img src="assets/media/cards/manju/hk-film.webp" alt="港风胶片" width="168" height="224"/><figcaption>港风胶片</figcaption></figure><figure><img src="assets/media/cards/manju/pixar-chibi.webp" alt="皮克斯式 3D Q 版" width="168" height="224"/><figcaption>皮克斯式 3D Q 版</figcaption></figure><figure><img src="assets/media/cards/manju/ink-wash.webp" alt="水墨淡彩" width="168" height="224"/><figcaption>水墨淡彩</figcaption></figure><figure><img src="assets/media/cards/manju/us-comic.webp" alt="美漫粗线" width="168" height="224"/><figcaption>美漫粗线</figcaption></figure><figure><img src="assets/media/cards/manju/jcg-rain.webp" alt="日系CG·雨夜" width="168" height="224"/><figcaption>日系CG·雨夜</figcaption></figure><figure><img src="assets/media/cards/manju/sweet-warm.webp" alt="都市甜宠暖调" width="168" height="224"/><figcaption>都市甜宠暖调</figcaption></figure><figure><img src="assets/media/cards/manju/noir-cold.webp" alt="悬疑冷调" width="168" height="224"/><figcaption>悬疑冷调</figcaption></figure><figure><img src="assets/media/cards/manju/east-grand.webp" alt="东方美学" width="168" height="224"/><figcaption>东方美学</figcaption></figure><figure><img src="assets/media/cards/design/design-bold.webp" alt="潮流大字" width="168" height="224"/><figcaption>潮流大字</figcaption></figure><figure><img src="assets/media/cards/design/design-collage.webp" alt="温暖手作拼贴" width="168" height="224"/><figcaption>温暖手作拼贴</figcaption></figure><figure><img src="assets/media/cards/design/design-commercial-2.webp" alt="明亮商业摄影" width="168" height="224"/><figcaption>明亮商业摄影</figcaption></figure><figure><img src="assets/media/cards/design/design-editorial-2.webp" alt="克制编辑" width="168" height="224"/><figcaption>克制编辑</figcaption></figure><figure><img src="assets/media/cards/design/design-oriental.webp" alt="东方留白" width="168" height="224"/><figcaption>东方留白</figcaption></figure><figure><img src="assets/media/cards/design/design-retro.webp" alt="复古印刷" width="168" height="224"/><figcaption>复古印刷</figcaption></figure><figure><img src="assets/media/cards/design/design-tech.webp" alt="科技几何" width="168" height="224"/><figcaption>科技几何</figcaption></figure><figure><img src="assets/media/cards/design/design-flat.webp" alt="清新扁平" width="168" height="224"/><figcaption>清新扁平</figcaption></figure><figure><img src="assets/media/cards/manju/jp-cel.webp" alt="日系赛璐璐" width="168" height="224"/><figcaption>日系赛璐璐</figcaption></figure><figure><img src="assets/media/cards/manju/guofeng-autumn.webp" alt="国风秋意" width="168" height="224"/><figcaption>国风秋意</figcaption></figure><figure><img src="assets/media/cards/manju/xianxia-3d.webp" alt="国漫 3D 仙侠" width="168" height="224"/><figcaption>国漫 3D 仙侠</figcaption></figure><figure><img src="assets/media/cards/manju/webtoon.webp" alt="韩漫条漫" width="168" height="224"/><figcaption>韩漫条漫</figcaption></figure><figure><img src="assets/media/cards/manju/hk-film.webp" alt="港风胶片" width="168" height="224"/><figcaption>港风胶片</figcaption></figure><figure><img src="assets/media/cards/manju/pixar-chibi.webp" alt="皮克斯式 3D Q 版" width="168" height="224"/><figcaption>皮克斯式 3D Q 版</figcaption></figure><figure><img src="assets/media/cards/manju/ink-wash.webp" alt="水墨淡彩" width="168" height="224"/><figcaption>水墨淡彩</figcaption></figure><figure><img src="assets/media/cards/manju/us-comic.webp" alt="美漫粗线" width="168" height="224"/><figcaption>美漫粗线</figcaption></figure><figure><img src="assets/media/cards/manju/jcg-rain.webp" alt="日系CG·雨夜" width="168" height="224"/><figcaption>日系CG·雨夜</figcaption></figure><figure><img src="assets/media/cards/manju/sweet-warm.webp" alt="都市甜宠暖调" width="168" height="224"/><figcaption>都市甜宠暖调</figcaption></figure><figure><img src="assets/media/cards/manju/noir-cold.webp" alt="悬疑冷调" width="168" height="224"/><figcaption>悬疑冷调</figcaption></figure><figure><img src="assets/media/cards/manju/east-grand.webp" alt="东方美学" width="168" height="224"/><figcaption>东方美学</figcaption></figure><figure><img src="assets/media/cards/design/design-bold.webp" alt="潮流大字" width="168" height="224"/><figcaption>潮流大字</figcaption></figure><figure><img src="assets/media/cards/design/design-collage.webp" alt="温暖手作拼贴" width="168" height="224"/><figcaption>温暖手作拼贴</figcaption></figure><figure><img src="assets/media/cards/design/design-commercial-2.webp" alt="明亮商业摄影" width="168" height="224"/><figcaption>明亮商业摄影</figcaption></figure><figure><img src="assets/media/cards/design/design-editorial-2.webp" alt="克制编辑" width="168" height="224"/><figcaption>克制编辑</figcaption></figure><figure><img src="assets/media/cards/design/design-oriental.webp" alt="东方留白" width="168" height="224"/><figcaption>东方留白</figcaption></figure><figure><img src="assets/media/cards/design/design-retro.webp" alt="复古印刷" width="168" height="224"/><figcaption>复古印刷</figcaption></figure><figure><img src="assets/media/cards/design/design-tech.webp" alt="科技几何" width="168" height="224"/><figcaption>科技几何</figcaption></figure><figure><img src="assets/media/cards/design/design-flat.webp" alt="清新扁平" width="168" height="224"/><figcaption>清新扁平</figcaption></figure></div>
+      <div class="track"><figure><img src="assets/media/cards/manju/jp-cel.webp" alt="日系赛璐璐" data-i18n-alt="card.jp-cel" width="168" height="224"/><figcaption data-i18n="card.jp-cel">日系赛璐璐</figcaption></figure><figure><img src="assets/media/cards/manju/guofeng-autumn.webp" alt="国风秋意" data-i18n-alt="card.guofeng-autumn" width="168" height="224"/><figcaption data-i18n="card.guofeng-autumn">国风秋意</figcaption></figure><figure><img src="assets/media/cards/manju/xianxia-3d.webp" alt="国漫 3D 仙侠" data-i18n-alt="card.xianxia-3d" width="168" height="224"/><figcaption data-i18n="card.xianxia-3d">国漫 3D 仙侠</figcaption></figure><figure><img src="assets/media/cards/manju/webtoon.webp" alt="韩漫条漫" data-i18n-alt="card.webtoon" width="168" height="224"/><figcaption data-i18n="card.webtoon">韩漫条漫</figcaption></figure><figure><img src="assets/media/cards/manju/hk-film.webp" alt="港风胶片" data-i18n-alt="card.hk-film" width="168" height="224"/><figcaption data-i18n="card.hk-film">港风胶片</figcaption></figure><figure><img src="assets/media/cards/manju/pixar-chibi.webp" alt="皮克斯式 3D Q 版" data-i18n-alt="card.pixar-chibi" width="168" height="224"/><figcaption data-i18n="card.pixar-chibi">皮克斯式 3D Q 版</figcaption></figure><figure><img src="assets/media/cards/manju/ink-wash.webp" alt="水墨淡彩" data-i18n-alt="card.ink-wash" width="168" height="224"/><figcaption data-i18n="card.ink-wash">水墨淡彩</figcaption></figure><figure><img src="assets/media/cards/manju/us-comic.webp" alt="美漫粗线" data-i18n-alt="card.us-comic" width="168" height="224"/><figcaption data-i18n="card.us-comic">美漫粗线</figcaption></figure><figure><img src="assets/media/cards/manju/jcg-rain.webp" alt="日系CG·雨夜" data-i18n-alt="card.jcg-rain" width="168" height="224"/><figcaption data-i18n="card.jcg-rain">日系CG·雨夜</figcaption></figure><figure><img src="assets/media/cards/manju/sweet-warm.webp" alt="都市甜宠暖调" data-i18n-alt="card.sweet-warm" width="168" height="224"/><figcaption data-i18n="card.sweet-warm">都市甜宠暖调</figcaption></figure><figure><img src="assets/media/cards/manju/noir-cold.webp" alt="悬疑冷调" data-i18n-alt="card.noir-cold" width="168" height="224"/><figcaption data-i18n="card.noir-cold">悬疑冷调</figcaption></figure><figure><img src="assets/media/cards/manju/east-grand.webp" alt="东方美学" data-i18n-alt="card.east-grand" width="168" height="224"/><figcaption data-i18n="card.east-grand">东方美学</figcaption></figure><figure><img src="assets/media/cards/design/design-bold.webp" alt="潮流大字" data-i18n-alt="card.design-bold" width="168" height="224"/><figcaption data-i18n="card.design-bold">潮流大字</figcaption></figure><figure><img src="assets/media/cards/design/design-collage.webp" alt="温暖手作拼贴" data-i18n-alt="card.design-collage" width="168" height="224"/><figcaption data-i18n="card.design-collage">温暖手作拼贴</figcaption></figure><figure><img src="assets/media/cards/design/design-commercial-2.webp" alt="明亮商业摄影" data-i18n-alt="card.design-commercial-2" width="168" height="224"/><figcaption data-i18n="card.design-commercial-2">明亮商业摄影</figcaption></figure><figure><img src="assets/media/cards/design/design-editorial-2.webp" alt="克制编辑" data-i18n-alt="card.design-editorial-2" width="168" height="224"/><figcaption data-i18n="card.design-editorial-2">克制编辑</figcaption></figure><figure><img src="assets/media/cards/design/design-oriental.webp" alt="东方留白" data-i18n-alt="card.design-oriental" width="168" height="224"/><figcaption data-i18n="card.design-oriental">东方留白</figcaption></figure><figure><img src="assets/media/cards/design/design-retro.webp" alt="复古印刷" data-i18n-alt="card.design-retro" width="168" height="224"/><figcaption data-i18n="card.design-retro">复古印刷</figcaption></figure><figure><img src="assets/media/cards/design/design-tech.webp" alt="科技几何" data-i18n-alt="card.design-tech" width="168" height="224"/><figcaption data-i18n="card.design-tech">科技几何</figcaption></figure><figure><img src="assets/media/cards/design/design-flat.webp" alt="清新扁平" data-i18n-alt="card.design-flat" width="168" height="224"/><figcaption data-i18n="card.design-flat">清新扁平</figcaption></figure><figure><img src="assets/media/cards/manju/jp-cel.webp" alt="日系赛璐璐" data-i18n-alt="card.jp-cel" width="168" height="224"/><figcaption data-i18n="card.jp-cel">日系赛璐璐</figcaption></figure><figure><img src="assets/media/cards/manju/guofeng-autumn.webp" alt="国风秋意" data-i18n-alt="card.guofeng-autumn" width="168" height="224"/><figcaption data-i18n="card.guofeng-autumn">国风秋意</figcaption></figure><figure><img src="assets/media/cards/manju/xianxia-3d.webp" alt="国漫 3D 仙侠" data-i18n-alt="card.xianxia-3d" width="168" height="224"/><figcaption data-i18n="card.xianxia-3d">国漫 3D 仙侠</figcaption></figure><figure><img src="assets/media/cards/manju/webtoon.webp" alt="韩漫条漫" data-i18n-alt="card.webtoon" width="168" height="224"/><figcaption data-i18n="card.webtoon">韩漫条漫</figcaption></figure><figure><img src="assets/media/cards/manju/hk-film.webp" alt="港风胶片" data-i18n-alt="card.hk-film" width="168" height="224"/><figcaption data-i18n="card.hk-film">港风胶片</figcaption></figure><figure><img src="assets/media/cards/manju/pixar-chibi.webp" alt="皮克斯式 3D Q 版" data-i18n-alt="card.pixar-chibi" width="168" height="224"/><figcaption data-i18n="card.pixar-chibi">皮克斯式 3D Q 版</figcaption></figure><figure><img src="assets/media/cards/manju/ink-wash.webp" alt="水墨淡彩" data-i18n-alt="card.ink-wash" width="168" height="224"/><figcaption data-i18n="card.ink-wash">水墨淡彩</figcaption></figure><figure><img src="assets/media/cards/manju/us-comic.webp" alt="美漫粗线" data-i18n-alt="card.us-comic" width="168" height="224"/><figcaption data-i18n="card.us-comic">美漫粗线</figcaption></figure><figure><img src="assets/media/cards/manju/jcg-rain.webp" alt="日系CG·雨夜" data-i18n-alt="card.jcg-rain" width="168" height="224"/><figcaption data-i18n="card.jcg-rain">日系CG·雨夜</figcaption></figure><figure><img src="assets/media/cards/manju/sweet-warm.webp" alt="都市甜宠暖调" data-i18n-alt="card.sweet-warm" width="168" height="224"/><figcaption data-i18n="card.sweet-warm">都市甜宠暖调</figcaption></figure><figure><img src="assets/media/cards/manju/noir-cold.webp" alt="悬疑冷调" data-i18n-alt="card.noir-cold" width="168" height="224"/><figcaption data-i18n="card.noir-cold">悬疑冷调</figcaption></figure><figure><img src="assets/media/cards/manju/east-grand.webp" alt="东方美学" data-i18n-alt="card.east-grand" width="168" height="224"/><figcaption data-i18n="card.east-grand">东方美学</figcaption></figure><figure><img src="assets/media/cards/design/design-bold.webp" alt="潮流大字" data-i18n-alt="card.design-bold" width="168" height="224"/><figcaption data-i18n="card.design-bold">潮流大字</figcaption></figure><figure><img src="assets/media/cards/design/design-collage.webp" alt="温暖手作拼贴" data-i18n-alt="card.design-collage" width="168" height="224"/><figcaption data-i18n="card.design-collage">温暖手作拼贴</figcaption></figure><figure><img src="assets/media/cards/design/design-commercial-2.webp" alt="明亮商业摄影" data-i18n-alt="card.design-commercial-2" width="168" height="224"/><figcaption data-i18n="card.design-commercial-2">明亮商业摄影</figcaption></figure><figure><img src="assets/media/cards/design/design-editorial-2.webp" alt="克制编辑" data-i18n-alt="card.design-editorial-2" width="168" height="224"/><figcaption data-i18n="card.design-editorial-2">克制编辑</figcaption></figure><figure><img src="assets/media/cards/design/design-oriental.webp" alt="东方留白" data-i18n-alt="card.design-oriental" width="168" height="224"/><figcaption data-i18n="card.design-oriental">东方留白</figcaption></figure><figure><img src="assets/media/cards/design/design-retro.webp" alt="复古印刷" data-i18n-alt="card.design-retro" width="168" height="224"/><figcaption data-i18n="card.design-retro">复古印刷</figcaption></figure><figure><img src="assets/media/cards/design/design-tech.webp" alt="科技几何" data-i18n-alt="card.design-tech" width="168" height="224"/><figcaption data-i18n="card.design-tech">科技几何</figcaption></figure><figure><img src="assets/media/cards/design/design-flat.webp" alt="清新扁平" data-i18n-alt="card.design-flat" width="168" height="224"/><figcaption data-i18n="card.design-flat">清新扁平</figcaption></figure></div>
     </div>
   </div>
 </section>
 
-
-  <!-- 团队协作、千面界面与更多内置能力 -->
-  <section class="section alt">
+  <!-- 团队协作、千面界面、语音与更多内置能力 -->
+  <section id="workspace" class="section alt">
     <div class="wrap">
       <div class="head rv">
         <span class="eyebrow" data-i18n="eco.eyebrow">TEAM &amp; WORKSPACE · 团队与工作台</span>
         <h2 data-i18n="eco.title">一个软件，多种工作方式。</h2>
-        <p class="lead" data-i18n="eco.lead">既能单人轻量对话，也能组建多角色 AI 团队、跨电脑局域网协作，还能按习惯随时切换 8 套界面。</p>
+        <p class="lead" data-i18n="eco.lead">既能单人轻量对话，也能组建多角色 AI 团队、跨电脑局域网协作，还能按习惯随时切换 10 套界面，或者干脆开口说。</p>
       </div>
       <div class="eco-split">
         <article class="eco-card rv">
           <h3 data-i18n="eco.company_t">组建 AI 团队与 3D 工作室</h3>
           <p class="muted" data-i18n="eco.company_d">说一句业务目标，自动规划总监、编剧、画师、剪辑等岗位分工并建好群聊；在像素与 3D 工作室里实时看到每位伙伴在忙什么，同主题对话自动归档为项目。</p>
-          <img src="assets/img/shot-office.webp" alt="工作室视图" loading="lazy"/>
+          <img src="assets/img/shot-office.webp" alt="工作室视图" data-i18n-alt="eco.shot_alt" loading="lazy"/>
         </article>
         <article class="eco-card rv">
-          <h3 data-i18n="eco.faces_t">千面（8 套界面）· 局域网协作 · 改造自己</h3>
-          <p class="muted" data-i18n="eco.faces_d">按 <kbd>F2</kbd> 随时在工作室、对话、磁贴、口袋、桌面、终端（以及扭蛋解锁的驾驶舱、街机）之间切换，全部数据共用。</p>
-          <ul style="margin:6px 0 0;padding-left:20px;color:var(--ink2);font-size:15px">
-            <li><b>局域网与跨网络协作：</b>默认关闭，6 位码配对互信，群聊派任务卡，他机不能在本机执行命令。</li>
-            <li><b>账本与消费上限：</b>支持单次对话、每日、每月设消费上限，到额自动停止；Key 本机加密保存。</li>
-            <li><b>插件与改造自己：</b>右下角「? → 改造」说出不顺手的地方即可生成个人插件，升级软件不会覆盖。</li>
-            <li><b>按 F1 随叫随到：</b>内置帮助助手直接解答操作问题并带你直达对应页面。</li>
+          <h3 data-i18n="eco.faces_t">千面（10 套界面）· 局域网协作 · 改造自己</h3>
+          <p class="muted" data-i18n="eco.faces_d">按 <kbd>F2</kbd> 随时在经典、一句话、对话、磁贴、口袋、桌面、终端（以及扭蛋解锁的驾驶舱、街机）和 0.7.0 新增的「二次元·痛窗」之间切换，全部数据共用。<a href="#faces">看 10 套界面 →</a></p>
+          <ul class="eco-list">
+            <li data-i18n="eco.li1"><b>局域网与跨网络协作：</b>默认关闭，6 位码配对互信，群聊派任务卡，他机不能在本机执行命令。</li>
+            <li data-i18n="eco.li2"><b>账本与消费上限：</b>支持单次对话、每日、每月设消费上限，到额自动停止；Key 本机加密保存。</li>
+            <li data-i18n="eco.li3"><b>插件与改造自己：</b>右下角「? → 改造」说出不顺手的地方即可生成个人插件，升级软件不会覆盖。</li>
+            <li data-i18n="eco.li4"><b>按 F1 随叫随到：</b>内置帮助助手直接解答操作问题并带你直达对应页面。</li>
           </ul>
+        </article>
+        <article class="eco-card wide rv">
+          <span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span>
+          <h3 data-i18n="eco.voice_t">语音直控与桌面陪伴助手</h3>
+          <p class="muted" data-i18n="eco.voice_d">不想打字就直接说：切页面、开画布、发起批量造物、换界面，都可以用语音指挥。桌面陪伴助手常驻桌面随叫随到，离线和在线两种自然语音连聊都支持；不用语音时，照常打字即可。</p>
         </article>
       </div>
     </div>
@@ -545,23 +980,23 @@
       </div>
       <div class="connect-grid">
         <article id="path-a" class="path-card rv">
-          <span class="kicker">A · 通用接法</span>
-          <h3>任何标准 new-api / OpenAI 兼容站点</h3>
-          <p class="muted">适合所有兼容站点：填一次接口地址和 Key，再选好文本、生图、视频三个默认模型即可。</p>
+          <span class="kicker" data-i18n="conn.a_k">A · 通用接法</span>
+          <h3 data-i18n="conn.a_t">任何标准 new-api / OpenAI 兼容站点</h3>
+          <p class="muted" data-i18n="conn.a_d">适合所有兼容站点：填一次接口地址和 Key，再选好文本、生图、视频三个默认模型即可。</p>
           <ol>
-            <li>在站点的「令牌 / API Key」页创建一个 Key（分分组时可按用途多建几个）。</li>
-            <li>记下接口地址，通常形如 <code>https://你的站点域名/v1</code>。</li>
-            <li>在软件打开「配置 → 连接 → 手动添加」，填入名称、接口地址与 API Key。</li>
-            <li>分别选择文本、生图、视频默认模型（某项需换地址或 Key 点右边「单独设置」），保存并检查连接。</li>
+            <li data-i18n="conn.a_1">在站点的「令牌 / API Key」页创建一个 Key（分分组时可按用途多建几个）。</li>
+            <li data-i18n="conn.a_2">记下接口地址，通常形如 <code>https://你的站点域名/v1</code>。</li>
+            <li data-i18n="conn.a_3">在软件打开「配置 → 连接 → 手动添加」，填入名称、接口地址与 API Key。</li>
+            <li data-i18n="conn.a_4">分别选择文本、生图、视频默认模型（某项需换地址或 Key 点右边「单独设置」），保存并检查连接。</li>
           </ol>
-          <img src="assets/img/shot-manual-add.webp" alt="手动添加连接表单示意" loading="lazy"/>
-          <p class="fine">不确定选哪个模型？文本选站点推荐的对话模型，生图选带 image 字样，视频选标注为视频的模型。</p>
+          <img src="assets/img/shot-manual-add.webp" alt="手动添加连接表单示意" data-i18n-alt="conn.a_alt" loading="lazy"/>
+          <p class="fine" data-i18n="conn.a_fine">不确定选哪个模型？文本选站点推荐的对话模型，生图选带 image 字样，视频选标注为视频的模型。</p>
         </article>
 
         <article id="path-b" class="path-card rv">
-          <span class="kicker">B · 更省事</span>
-          <h3>支持「智能路由 + 一键导入」的站点</h3>
-          <p class="muted">智能 Key 自动挑选健康线路；点一下「一键导入」，文本、生图、视频和编程助手模型一次配好。</p>
+          <span class="kicker" data-i18n="conn.b_k">B · 更省事</span>
+          <h3 data-i18n="conn.b_t">支持「智能路由 + 一键导入」的站点</h3>
+          <p class="muted" data-i18n="conn.b_d">智能 Key 自动挑选健康线路；点一下「一键导入」，文本、生图、视频和编程助手模型一次配好。</p>
           <div id="partner-cta" class="partner-cta" hidden>
             <p id="partner-cta-text"></p>
             <div class="actions">
@@ -570,13 +1005,13 @@
             </div>
           </div>
           <ol>
-            <li>在支持一键导入的站点注册并充值，创建一个智能路由 Key。</li>
-            <li>在该 Key 所在行点击「一键导入」，选择「万能创作终端」。</li>
-            <li>浏览器唤起软件后，在弹窗核对来源与模型点击「导入」。</li>
-            <li>未自动唤起？复制导入码回软件按 <kbd>Ctrl+V</kbd>（Mac 上 <kbd>⌘+V</kbd>）。</li>
+            <li data-i18n="conn.b_1">在支持一键导入的站点注册并充值，创建一个智能路由 Key。</li>
+            <li data-i18n="conn.b_2">在该 Key 所在行点击「一键导入」，选择「万能创作终端」。</li>
+            <li data-i18n="conn.b_3">浏览器唤起软件后，在弹窗核对来源与模型点击「导入」。</li>
+            <li data-i18n="conn.b_4">未自动唤起？复制导入码回软件按 <kbd>Ctrl+V</kbd>（Mac 上 <kbd>⌘+V</kbd>）。</li>
           </ol>
-          <img src="assets/img/shot-import.webp" alt="一键导入确认窗口示意" loading="lazy"/>
-          <p class="fine">确认前不会改动任何现有设置；导错了可在「配置 → 连接」撤销。详看
+          <img src="assets/img/shot-import.webp" alt="一键导入确认窗口示意" data-i18n-alt="conn.b_alt" loading="lazy"/>
+          <p class="fine" data-i18n="conn.b_fine">确认前不会改动任何现有设置；导错了可在「配置 → 连接」撤销。详看
             <a href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E9%80%9A%E7%94%A8%E7%89%88%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener">通用版使用手册 ↗</a> 与
             <a href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E7%AC%AC%E4%B8%89%E6%96%B9%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1%E7%AB%99%E7%82%B9%E6%8E%A5%E5%85%A5%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener">智能路由站接入手册 ↗</a>。
           </p>
@@ -596,70 +1031,75 @@
       <div id="video-grid" class="films">
         <article class="film rv" data-video="tutorial">
           <button class="video-poster" type="button" aria-label="播放新手教程视频">
-            <img src="assets/img/tutorial-neutral-landscape-4e596c4b.jpg" alt="新手教程封面" loading="lazy"/>
-            <span class="soon">即将上线</span>
+            <img src="assets/img/tutorial-neutral-landscape-4e596c4b.jpg" alt="新手教程封面" data-i18n-alt="tut.t_alt" loading="lazy"/>
+            <span class="soon" data-i18n="tut.soon">即将上线</span>
             <span class="play" aria-hidden="true"></span>
           </button>
           <div class="body">
-            <span class="meta">教程 · 约 25 分钟 · 15 个可跳转章节</span>
-            <h3>新手教程：从下载到第一件作品</h3>
-            <p>一条视频讲完下载安装、连接站点、对话出图出视频、创作台、千面界面、更新与卸载。</p>
+            <span class="meta" data-i18n="tut.t_meta">教程 · 约 25 分钟 · 15 个可跳转章节</span>
+            <h3 data-i18n="tut.t_h">新手教程：从下载到第一件作品</h3>
+            <p data-i18n="tut.t_p">一条视频讲完下载安装、连接站点、对话出图出视频、创作台、千面界面、更新与卸载。</p>
           </div>
         </article>
 
         <article class="film rv" data-video="promo">
           <button class="video-poster" type="button" aria-label="播放宣传片">
-            <img src="assets/img/promo-neutral-landscape-8f26a002.jpg" alt="宣传片封面" loading="lazy"/>
-            <span class="soon">即将上线</span>
+            <img src="assets/img/promo-neutral-landscape-8f26a002.jpg" alt="宣传片封面" data-i18n-alt="tut.p_alt" loading="lazy"/>
+            <span class="soon" data-i18n="tut.soon">即将上线</span>
             <span class="play" aria-hidden="true"></span>
           </button>
           <div class="body">
-            <span class="meta">宣传片 · 1 分 20 秒 · 手机自动播竖屏版</span>
-            <h3>宣传片：80 秒看懂万能创作终端</h3>
-            <p>一句话出图、出视频、剪成片，连接任意兼容 OpenAI 的站点即可开工。</p>
+            <span class="meta" data-i18n="tut.p_meta">宣传片 · 1 分 20 秒 · 手机自动播竖屏版</span>
+            <h3 data-i18n="tut.p_h">宣传片：80 秒看懂万能创作终端</h3>
+            <p data-i18n="tut.p_p">一句话出图、出视频、剪成片，连接任意兼容 OpenAI 的站点即可开工。</p>
           </div>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- 0.6.8 更新说明 -->
-  
-<section id="changelog" class="section alt">
-  <div class="wrap">
-    <div class="head rv">
-      <span class="eyebrow" data-i18n="cl.eyebrow">RELEASE NOTES · 0.6.8 更新说明</span>
-      <h2 data-i18n="cl.title">0.6.8 带来了这些新变化。</h2>
-      <p class="lead" data-i18n="cl.lead">创作台三大主页、音乐创作、超级导演、做网站与客服、漫剧黄金前三集全面上线。</p>
-    </div>
-    <div class="notes">
-      <article class="note rv"><h3 data-i18n="cl.i1_t">创作台升级为「画布 · 批量造物 · 百宝箱」三大主页</h3><p data-i18n="cl.i1_d">左侧导航直接打开无限画布、批量造物（多提示词并发出图出视频、H3 原生运镜合成）与百宝箱（44+ 款本机免扣费音视频处理、抠图超分、字幕烧录即填即跑）。</p></article>
-<article class="note rv"><h3 data-i18n="cl.i2_t">一等公民「音乐创作」与免修嘴精准配音</h3><p data-i18n="cl.i2_d">独立「音乐」页支持写词谱曲、主题曲、说唱与器乐分轨，本机直出母带、伴奏、LRC 歌词与 1080p 歌词字幕样片；漫剧与成片配音自动贴合画面开口包络，全程不改像素不 P 嘴。</p></article>
-<article class="note rv"><h3 data-i18n="cl.i3_t">一登录一充值、兑换码核销与免配 Key 精品语音</h3><p data-i18n="cl.i3_d">登录官方账号即可一处充值、兑换码核销并打通对话、生图、生视频与在线高清配音，无需单独填配音 Key；智能路由升级为首选软偏好，繁忙时自动回退健康线路。</p></article>
-<article class="note rv"><h3 data-i18n="cl.i4_t">新增「港风叙事 MV」「高奢实拍广告」风格卡与超级导演后置选卡</h3><p data-i18n="cl.i4_d">漫剧总监与超级导演新增两张实战风格卡；超级导演开局可选「先不选风格卡」，等免费代码样片拍板时再推荐 2–3 张最搭调的风格卡敲定开拍。</p></article>
-<article class="note rv"><h3 data-i18n="cl.i5_t">超级导演：全能多图参考、花钱前确认清单与插话优先</h3><p data-i18n="cl.i5_d">超级导演拥有独立标签与关闭按钮；默认全能多图参考让人物场景更稳、动作更放得开；每批付费生成前先发确认清单，多任务带值班卡，中途插话立即优先。</p></article>
-<article class="note rv"><h3 data-i18n="cl.i6_t">高审美网站主页设计、专属知识库客服与网页视频下载增强</h3><p data-i18n="cl.i6_d">首页新增「做个漂亮网站」（5 套母版、零境外慢源微信秒开）与「做个专属智能客服」（防幻觉护栏、密钥严留服务端）；网页视频下载支持整段分享口令提取与内置浏览器流嗅探兜底。</p></article>
-<article class="note rv"><h3 data-i18n="cl.i7_t">漫剧流水线：先试拍第 1 集 + 黄金前三集高配</h3><p data-i18n="cl.i7_d">长篇连载支持先试拍第 1 集看人物和节奏再跑全书；可开启「黄金前 N 集高配」立住开篇留存，后续集数自动切回省钱或均衡档控住总预算。</p></article>
-<article class="note rv"><h3 data-i18n="cl.i8_t">新一代 6.2 默认模型档位与稳定性增强</h3><p data-i18n="cl.i8_d">强、标准、日常档默认升级至 6.2 等新一代模型；修复文档状态识别与长对话衔接细节，跨整点刷新令牌时自动重连续跑。</p></article>
-      <article class="note soon rv" style="grid-column:1 / -1">
-        <span class="badge-soon" data-i18n="cl.soon_badge">0.7.0 即将推出</span>
-        <h3 data-i18n="cl.soon_t">桌面助手 · 技能包工坊 · 语音陪伴</h3>
-        <p data-i18n="cl.soon_d">本项功能留到 0.7.0 推出，当前 0.6.8 不包含桌宠。届时将提供可选的桌面常驻助手、思维云朵、「教一次」可分享技能包与离线语音陪伴。</p>
-      </article>
-    </div>
-    <details class="older rv">
-      <summary data-i18n="cl.older">查看历史版本更新说明（0.6.7 – 0.6.1）</summary>
-      <div class="in"><div><h4>v0.6.7</h4><ul><li>超级导演上线：先用代码免费出样片看节奏，再生成正式画面并自动精剪、配音效配乐。</li><li>音效库与配乐默认启用：画布导出、代码视频、漫剧总监与流水线自动铺音效与配乐。</li><li>「交给制图总监精修」：原图不动出新文件；定妆照默认清边、统一底色与放大。</li><li>漫剧流水线无人值守自动续跑；运行中可直接换内核和模型；账本对账支持退款冲减。</li></ul></div>
-<div><h4>v0.6.6</h4><ul><li>AI 回复里的图表、数学公式、宽表格与代码对比直接可视化渲染。</li><li>生图与生视频失败时直接给出大白话诊断，并支持「帮我查查」免费自检。</li><li>MiniMax H3 可选生成前提示词审查；键鼠接管暂停后点「继续」顺畅接力。</li></ul></div>
-<div><h4>v0.6.5</h4><ul><li>助手新增「干活」模式，私聊直接对接完整工作会话；全部选内核处支持 Devin 等更多内核。</li><li>支持逐对话设置额度接力，网络抖动与超时最多自动重试 5 次。</li><li>组建 AI 团队支持先读资料、给方案再建群。</li></ul></div>
-<div><h4>v0.6.4</h4><ul><li>会话分类支持最多 4 层子分类、拖拽排序与撤销；首次打开提供 18 种用途与入门包。</li><li>动态页上线任务板与成员近况；发布设置新增二维码放大。</li></ul></div>
-<div><h4>v0.6.3</h4><ul><li>右下角「?」新增「改造」：不顺手的地方说一句即可生成个人插件，升级不丢失。</li><li>任务支持自动拆分并行子任务；扩展页统一管理插件、技能与工具（MCP），内置安全模式。</li><li>漫剧流水线支持全自动审片返工与预算提前停；新增 Devin CLI 内核支持。</li></ul></div>
-<div><h4>v0.6.2</h4><ul><li>漫剧流水线支持自动定集数、多集并行与接缝画面衔接；上线额度接力与助手批量换连接。</li><li>插件支持停靠对话右侧与左侧导航；办公室支持自定义视角与 3D 摆件。</li></ul></div>
-<div><h4>v0.6.1</h4><ul><li>上线漫剧流水线、组建 AI 团队、3D 团队办公室、跨网络加密协作与智能路由切换。</li><li>上线对话内权限申请、「记住」长期规则与一键换强模型重做。</li></ul></div></div>
-    </details>
-  </div>
-</section>
+  <!-- 0.7.0 更新说明（保留 0.6.8 与更早版本的折叠记录） -->
+  <section id="changelog" class="section alt">
+    <div class="wrap">
+      <div class="head rv">
+        <span class="eyebrow" data-i18n="cl.eyebrow">RELEASE NOTES · 0.7.0 重磅更新</span>
+        <h2 data-i18n="cl.title">0.7.0：开口，就能指挥整个软件。</h2>
+        <p class="lead" data-i18n="cl.lead">桌面陪伴助手与自然语音连聊、全软件语音直控、千面第 10 套界面、五内核多账号号池、全内核三态进度计划卡。</p>
+      </div>
+      <div class="notes notes-new">
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n1_t">桌面陪伴助手与离线 / 在线自然语音连聊</h3><p data-i18n="cl.n1_d">桌面陪伴助手常驻桌面、随叫随到；离线和在线两种语音都支持自然连聊，像和朋友说话一样一句接一句，不用每次都点按钮。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n2_t">全软件语音直控</h3><p data-i18n="cl.n2_d">不只是语音输入：切页面、开画布、发起批量造物、换界面，都可以直接说，软件听懂后替你点到位。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n3_t">千面第 10 套「二次元·痛窗」立绘布局定制</h3><p data-i18n="cl.n3_d">高自由度的二次元界面：角色立绘和布局都可以按自己的喜好定制，数据与其余 9 套界面共用，按 F2 随时切换。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n4_t">五内核多账号号池自动换号</h3><p data-i18n="cl.n4_d">五大内核都能配置多账号号池：一个账号额度用完或被限流时自动换下一个，带着原对话上下文续跑，做好的成品不重做。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n5_t">全内核三态进度计划卡</h3><p data-i18n="cl.n5_d">不管用哪个内核，任务都用同一种计划卡展示进度：待办、进行中、已完成三种状态一眼看清，做到哪一步不用猜。</p></article>
+        <article class="note hot rv"><span class="badge-new" data-i18n="cl.new_badge">0.7.0 新增</span><h3 data-i18n="cl.n6_t">创作台三大主页与 DiffSinger 本地原创音乐</h3><p data-i18n="cl.n6_d">画布、批量造物、百宝箱继续作为创作台三大主页；音乐创作接入 DiffSinger，原创歌曲的歌声可以在本机合成。</p></article>
+      </div>
 
+      <h3 class="cl-sub rv" data-i18n="cl.sub068">0.6.8 更新回顾</h3>
+      <div class="notes">
+        <article class="note rv"><h3 data-i18n="cl.i1_t">创作台升级为「画布 · 批量造物 · 百宝箱」三大主页</h3><p data-i18n="cl.i1_d">左侧导航直接打开无限画布、批量造物（多提示词并发出图出视频、H3 原生运镜合成）与百宝箱（44+ 款本机免扣费音视频处理、抠图超分、字幕烧录即填即跑）。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i2_t">一等公民「音乐创作」与免修嘴精准配音</h3><p data-i18n="cl.i2_d">独立「音乐」页支持写词谱曲、主题曲、说唱与器乐分轨，本机直出母带、伴奏、LRC 歌词与 1080p 歌词字幕样片；漫剧与成片配音自动贴合画面开口包络，全程不改像素不 P 嘴。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i3_t">一登录一充值、兑换码核销与免配 Key 精品语音</h3><p data-i18n="cl.i3_d">登录官方账号即可一处充值、兑换码核销并打通对话、生图、生视频与在线高清配音，无需单独填配音 Key；智能路由升级为首选软偏好，繁忙时自动回退健康线路。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i4_t">新增「港风叙事 MV」「高奢实拍广告」风格卡与超级导演后置选卡</h3><p data-i18n="cl.i4_d">漫剧总监与超级导演新增两张实战风格卡；超级导演开局可选「先不选风格卡」，等免费代码样片拍板时再推荐 2–3 张最搭调的风格卡敲定开拍。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i5_t">超级导演：全能多图参考、花钱前确认清单与插话优先</h3><p data-i18n="cl.i5_d">超级导演拥有独立标签与关闭按钮；默认全能多图参考让人物场景更稳、动作更放得开；每批付费生成前先发确认清单，多任务带值班卡，中途插话立即优先。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i6_t">高审美网站主页设计、专属知识库客服与网页视频下载增强</h3><p data-i18n="cl.i6_d">首页新增「做个漂亮网站」（5 套母版、零境外慢源微信秒开）与「做个专属智能客服」（防幻觉护栏、密钥严留服务端）；网页视频下载支持整段分享口令提取与内置浏览器流嗅探兜底。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i7_t">漫剧流水线：先试拍第 1 集 + 黄金前三集高配</h3><p data-i18n="cl.i7_d">长篇连载支持先试拍第 1 集看人物和节奏再跑全书；可开启「黄金前 N 集高配」立住开篇留存，后续集数自动切回省钱或均衡档控住总预算。</p></article>
+        <article class="note rv"><h3 data-i18n="cl.i8_t">新一代 6.2 默认模型档位与稳定性增强</h3><p data-i18n="cl.i8_d">强、标准、日常档默认升级至 6.2 等新一代模型；修复文档状态识别与长对话衔接细节，跨整点刷新令牌时自动重连续跑。</p></article>
+      </div>
+      <details class="older rv">
+        <summary data-i18n="cl.older">查看历史版本更新说明（0.6.7 – 0.6.1）</summary>
+        <div class="in">
+          <div><h4>v0.6.7</h4><ul data-i18n="cl.h067"><li>超级导演上线：先用代码免费出样片看节奏，再生成正式画面并自动精剪、配音效配乐。</li><li>音效库与配乐默认启用：画布导出、代码视频、漫剧总监与流水线自动铺音效与配乐。</li><li>「交给制图总监精修」：原图不动出新文件；定妆照默认清边、统一底色与放大。</li><li>漫剧流水线无人值守自动续跑；运行中可直接换内核和模型；账本对账支持退款冲减。</li></ul></div>
+          <div><h4>v0.6.6</h4><ul data-i18n="cl.h066"><li>AI 回复里的图表、数学公式、宽表格与代码对比直接可视化渲染。</li><li>生图与生视频失败时直接给出大白话诊断，并支持「帮我查查」免费自检。</li><li>MiniMax H3 可选生成前提示词审查；键鼠接管暂停后点「继续」顺畅接力。</li></ul></div>
+          <div><h4>v0.6.5</h4><ul data-i18n="cl.h065"><li>助手新增「干活」模式，私聊直接对接完整工作会话；全部选内核处支持 Devin 等更多内核。</li><li>支持逐对话设置额度接力，网络抖动与超时最多自动重试 5 次。</li><li>组建 AI 团队支持先读资料、给方案再建群。</li></ul></div>
+          <div><h4>v0.6.4</h4><ul data-i18n="cl.h064"><li>会话分类支持最多 4 层子分类、拖拽排序与撤销；首次打开提供 18 种用途与入门包。</li><li>动态页上线任务板与成员近况；发布设置新增二维码放大。</li></ul></div>
+          <div><h4>v0.6.3</h4><ul data-i18n="cl.h063"><li>右下角「?」新增「改造」：不顺手的地方说一句即可生成个人插件，升级不丢失。</li><li>任务支持自动拆分并行子任务；扩展页统一管理插件、技能与工具（MCP），内置安全模式。</li><li>漫剧流水线支持全自动审片返工与预算提前停；新增 Devin CLI 内核支持。</li></ul></div>
+          <div><h4>v0.6.2</h4><ul data-i18n="cl.h062"><li>漫剧流水线支持自动定集数、多集并行与接缝画面衔接；上线额度接力与助手批量换连接。</li><li>插件支持停靠对话右侧与左侧导航；办公室支持自定义视角与 3D 摆件。</li></ul></div>
+          <div><h4>v0.6.1</h4><ul data-i18n="cl.h061"><li>上线漫剧流水线、组建 AI 团队、3D 团队办公室、跨网络加密协作与智能路由切换。</li><li>上线对话内权限申请、「记住」长期规则与一键换强模型重做。</li></ul></div>
+        </div>
+      </details>
+    </div>
+  </section>
 
   <!-- 下载区 -->
   <section id="download" class="section">
@@ -667,10 +1107,131 @@
       <div class="head rv">
         <span class="eyebrow" data-i18n="dl.eyebrow">DOWNLOAD · 立即下载</span>
         <h2 data-i18n="dl.title">选择你的电脑系统。</h2>
-        <p class="lead">当前版本 <b>v<span data-ver>0.6.8</span></b><span class="release-date"></span> · 免费下载安装，支持 Windows 10/11（64 位）与 macOS 13 及以上。</p>
+        <p class="lead" data-i18n="dl.lead">当前版本 <b>v<span data-ver>0.7.0</span></b><span class="release-date"></span> · 免费下载安装，支持 Windows 10/11（64 位）与 macOS 13 及以上。</p>
       </div>
       <div id="dl-grid" class="dl-grid"></div>
-      <p id="mirror-help" class="fine" style="margin-top:14px">历史版本与完整校验清单见 <a data-release-page href="https://github.com/ginsonko/omnicreator/releases" target="_blank" rel="noopener">GitHub 发布页 ↗</a>，下载缓慢也可在 QQ 群 1131210592 获取群文件。</p>
+
+      <!-- 新手下载引导（完整版）：平时折叠成一行；点任何 .exe / .dmg 下载按钮时自动温和展开并提示 -->
+      <details id="keep-guide" class="keep">
+        <summary><span class="keep-ico" aria-hidden="true">!</span><span data-i18n="keep.sum">第一次下载必看：浏览器提示「通常不会下载」、或 Windows 弹出蓝色窗口怎么办？点开看图解，10 秒搞定</span></summary>
+        <div class="keep-body">
+          <p class="keep-intro" data-i18n="keep.intro">这是内测版安装包还没有购买代码签名时的常规提示，不代表文件有问题。想更放心，可以用下载卡片上的 SHA256 核对文件。</p>
+          <div class="keep-row k-row-win">
+            <h4 data-i18n="keep.win_h">Windows · 用 Edge / Chrome 下载 .exe</h4>
+            <ol class="ksteps">
+              <li class="kstep">
+                <svg class="kart" viewBox="0 0 220 132" aria-hidden="true">
+                  <rect class="k-win" x=".5" y=".5" width="219" height="131" rx="9"/><path class="k-bar" d="M.5 9.5a9 9 0 0 1 9-9h201a9 9 0 0 1 9 9V27H.5z"/>
+                  <rect class="k-url" x="10" y="8" width="112" height="12" rx="6"/><circle class="k-dot" cx="138" cy="14" r="2.5"/><circle class="k-dot" cx="152" cy="14" r="2.5"/><circle class="k-dot" cx="204" cy="14" r="2.5"/>
+                  <circle class="k-ring" cx="178" cy="14" r="10"/><path class="k-ico" d="M178 8.5v7.5m-3.5-3 3.5 3.5 3.5-3.5M172.5 19.5h11"/>
+                  <rect class="k-pop" x="48" y="32" width="164" height="72" rx="8"/>
+                  <text class="k-t k-b" x="58" y="48" data-i18n="keep.t_dl">下载</text>
+                  <path class="k-warn" d="M66 59l7 12H59z"/>
+                  <text class="k-t" x="80" y="65" data-i18n="keep.t_warn">通常不会下载</text>
+                  <text class="k-t k-dim" x="80" y="77">OmniCreator-…-Setup.exe</text>
+                  <text class="k-t k-dim" x="58" y="95" data-i18n="keep.t_trust">打开前请确认你信任它</text>
+                </svg>
+                <p><b class="kn">1</b><span data-i18n="keep.w1">点浏览器右上角的下载图标，会看到「通常不会下载」的提示。</span></p>
+              </li>
+              <li class="kstep">
+                <svg class="kart" viewBox="0 0 220 132" aria-hidden="true">
+                  <rect class="k-win" x=".5" y=".5" width="219" height="131" rx="9"/><path class="k-bar" d="M.5 9.5a9 9 0 0 1 9-9h201a9 9 0 0 1 9 9V27H.5z"/>
+                  <rect class="k-url" x="10" y="8" width="112" height="12" rx="6"/><circle class="k-dot" cx="138" cy="14" r="2.5"/><circle class="k-dot" cx="152" cy="14" r="2.5"/><circle class="k-dot" cx="204" cy="14" r="2.5"/>
+                  <path class="k-ico" d="M178 8.5v7.5m-3.5-3 3.5 3.5 3.5-3.5M172.5 19.5h11"/>
+                  <rect class="k-pop" x="48" y="32" width="164" height="72" rx="8"/>
+                  <text class="k-t k-b" x="58" y="48" data-i18n="keep.t_dl">下载</text>
+                  <path class="k-warn" d="M66 59l7 12H59z"/>
+                  <text class="k-t" x="80" y="65" data-i18n="keep.t_warn">通常不会下载</text>
+                  <text class="k-t k-dim" x="80" y="77">OmniCreator-…</text>
+                  <rect class="k-btn" x="184" y="57" width="20" height="17" rx="4"/><text class="k-t k-b" x="194" y="68" text-anchor="middle">…</text>
+                  <circle class="k-ring" cx="194" cy="65.5" r="14"/>
+                  <path class="k-cur" d="M0 0v13l3.6-3.2 2.7 6 2.2-1-2.7-5.9H10.5z" transform="translate(196 70)"/>
+                </svg>
+                <p><b class="kn">2</b><span data-i18n="keep.w2">把鼠标移到这一行，点右边的 <b>…</b>（更多操作）。</span></p>
+              </li>
+              <li class="kstep">
+                <svg class="kart" viewBox="0 0 220 132" aria-hidden="true">
+                  <rect class="k-win" x=".5" y=".5" width="219" height="131" rx="9"/><path class="k-bar" d="M.5 9.5a9 9 0 0 1 9-9h201a9 9 0 0 1 9 9V27H.5z"/>
+                  <rect class="k-url" x="10" y="8" width="112" height="12" rx="6"/><circle class="k-dot" cx="138" cy="14" r="2.5"/><circle class="k-dot" cx="152" cy="14" r="2.5"/><circle class="k-dot" cx="204" cy="14" r="2.5"/>
+                  <path class="k-ico" d="M178 8.5v7.5m-3.5-3 3.5 3.5 3.5-3.5M172.5 19.5h11"/>
+                  <rect class="k-pop" x="48" y="32" width="164" height="42" rx="8"/>
+                  <path class="k-warn" d="M66 46l7 12H59z"/>
+                  <text class="k-t" x="80" y="56" data-i18n="keep.t_warn">通常不会下载</text>
+                  <rect class="k-btn" x="184" y="44" width="20" height="17" rx="4"/><text class="k-t k-b" x="194" y="55" text-anchor="middle">…</text>
+                  <rect class="k-menu" x="96" y="64" width="116" height="62" rx="7"/>
+                  <text class="k-t k-dim" x="106" y="79" data-i18n="keep.t_delete">删除</text>
+                  <rect class="k-hit" x="100" y="85" width="108" height="18" rx="5"/>
+                  <text class="k-t k-b k-on" x="106" y="97.5" data-i18n="keep.t_keep">保留</text>
+                  <text class="k-t k-dim" x="106" y="118" data-i18n="keep.t_copy">复制下载链接</text>
+                  <path class="k-cur" d="M0 0v13l3.6-3.2 2.7 6 2.2-1-2.7-5.9H10.5z" transform="translate(176 92)"/>
+                </svg>
+                <p><b class="kn">3</b><span data-i18n="keep.w3">在菜单里点 <b>保留</b>。Edge 再确认一次时，点「显示更多 → 仍然保留」。</span></p>
+              </li>
+              <li class="kstep">
+                <svg class="kart" viewBox="0 0 220 132" aria-hidden="true">
+                  <rect class="k-blue" x=".5" y=".5" width="219" height="131" rx="9"/>
+                  <text class="k-t k-w k-b" x="16" y="28" font-size="11" data-i18n="keep.t_ss">Windows 已保护你的电脑</text>
+                  <rect class="k-wl" x="16" y="38" width="150" height="5" rx="2.5"/><rect class="k-wl" x="16" y="48" width="120" height="5" rx="2.5"/>
+                  <text class="k-t k-w k-u" x="16" y="70" data-i18n="keep.t_more">更多信息</text>
+                  <text class="k-t k-w k-num" x="76" y="70">①</text>
+                  <rect class="k-wbtn on" x="64" y="98" width="72" height="22" rx="3"/><text class="k-t k-b k-blue-t" x="100" y="113" text-anchor="middle" data-i18n="keep.t_run">仍要运行</text>
+                  <rect class="k-wbtn" x="144" y="98" width="62" height="22" rx="3"/><text class="k-t k-w" x="175" y="113" text-anchor="middle" data-i18n="keep.t_norun">不运行</text>
+                  <text class="k-t k-w k-num" x="48" y="113">②</text>
+                  <path class="k-cur" d="M0 0v13l3.6-3.2 2.7 6 2.2-1-2.7-5.9H10.5z" transform="translate(118 108)"/>
+                </svg>
+                <p><b class="kn">4</b><span data-i18n="keep.w4">双击安装包；出现蓝色窗口时，先点 <b>更多信息</b>，再点 <b>仍要运行</b>。</span></p>
+              </li>
+            </ol>
+          </div>
+          <div class="keep-row k-row-mac">
+            <h4 data-i18n="keep.mac_h">macOS · 第一次打开放行</h4>
+            <ol class="ksteps">
+              <li class="kstep">
+                <svg class="kart" viewBox="0 0 220 132" aria-hidden="true">
+                  <rect class="k-win" x=".5" y=".5" width="219" height="131" rx="9"/><path class="k-bar" d="M.5 9.5a9 9 0 0 1 9-9h201a9 9 0 0 1 9 9V23H.5z"/>
+                  <circle class="k-dot" cx="14" cy="12" r="3"/><circle class="k-dot" cx="25" cy="12" r="3"/><circle class="k-dot" cx="36" cy="12" r="3"/>
+                  <text class="k-t k-dim" x="110" y="15.5" text-anchor="middle">OmniCreator.dmg</text>
+                  <rect class="k-app" x="34" y="46" width="46" height="46" rx="11"/><path class="k-app-i" d="M48 69a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/>
+                  <text class="k-t" x="57" y="108" text-anchor="middle">OmniCreator</text>
+                  <path class="k-arrow" d="M92 69h34m-7-7 7 7-7 7"/>
+                  <path class="k-folder" d="M140 52h16l5 6h25a4 4 0 0 1 4 4v26a4 4 0 0 1-4 4h-46a4 4 0 0 1-4-4V56a4 4 0 0 1 4-4z"/>
+                  <text class="k-t" x="163" y="108" text-anchor="middle" data-i18n="keep.t_apps">应用程序</text>
+                </svg>
+                <p><b class="kn">1</b><span data-i18n="keep.m1">打开 dmg，把 OmniCreator 拖进「应用程序」。</span></p>
+              </li>
+              <li class="kstep">
+                <svg class="kart" viewBox="0 0 220 132" aria-hidden="true">
+                  <rect class="k-win" x=".5" y=".5" width="219" height="131" rx="9"/>
+                  <rect class="k-pop" x="34" y="16" width="152" height="100" rx="12"/>
+                  <rect class="k-app" x="96" y="26" width="28" height="28" rx="7"/><path class="k-warn" d="M124 44l6 10h-12z"/>
+                  <text class="k-t k-b" x="110" y="70" text-anchor="middle" data-i18n="keep.t_cant">未打开“OmniCreator”</text>
+                  <text class="k-t k-dim" x="110" y="82" text-anchor="middle" data-i18n="keep.t_unverified">无法验证开发者</text>
+                  <rect class="k-hit" x="62" y="90" width="96" height="19" rx="6"/><text class="k-t k-b k-on" x="110" y="103" text-anchor="middle" data-i18n="keep.t_done">完成</text>
+                  <path class="k-cur" d="M0 0v13l3.6-3.2 2.7 6 2.2-1-2.7-5.9H10.5z" transform="translate(140 98)"/>
+                </svg>
+                <p><b class="kn">2</b><span data-i18n="keep.m2">双击打开一次，看到提示后点「完成」。</span></p>
+              </li>
+              <li class="kstep">
+                <svg class="kart" viewBox="0 0 220 132" aria-hidden="true">
+                  <rect class="k-win" x=".5" y=".5" width="219" height="131" rx="9"/><path class="k-side" d="M.5 9.5a9 9 0 0 1 9-9H72v131H9.5a9 9 0 0 1-9-9z"/>
+                  <rect class="k-sl" x="10" y="18" width="50" height="6" rx="3"/><rect class="k-sl" x="10" y="34" width="42" height="6" rx="3"/>
+                  <rect class="k-hit" x="6" y="47" width="62" height="18" rx="5"/><text class="k-t k-b k-on" x="11" y="59.5" data-i18n="keep.t_privacy">隐私与安全性</text>
+                  <rect class="k-sl" x="10" y="76" width="46" height="6" rx="3"/><rect class="k-sl" x="10" y="92" width="38" height="6" rx="3"/>
+                  <text class="k-t k-b" x="84" y="26" data-i18n="keep.t_security">安全性</text>
+                  <text class="k-t k-dim" x="84" y="48" data-i18n="keep.t_blocked">已阻止“OmniCreator”</text>
+                  <rect class="k-btn" x="84" y="62" width="86" height="22" rx="6"/><text class="k-t k-b" x="127" y="76.5" text-anchor="middle" data-i18n="keep.t_open">仍要打开</text>
+                  <rect class="k-ringr" x="79" y="57" width="96" height="32" rx="10"/>
+                  <path class="k-cur" d="M0 0v13l3.6-3.2 2.7 6 2.2-1-2.7-5.9H10.5z" transform="translate(150 74)"/>
+                </svg>
+                <p><b class="kn">3</b><span data-i18n="keep.m3">到「系统设置 → 隐私与安全性」点 <b>仍要打开</b>；macOS 13 / 14 也可以在「应用程序」里右键 →「打开」。</span></p>
+              </li>
+            </ol>
+          </div>
+          <p class="fine keep-note" data-i18n="keep.note">不同浏览器和版本的按钮文字略有不同：「保留」也可能写作 Keep、保存或「仍然保留」。更详细的说明见下方 <a href="#windows">Windows 第一次打开</a> 与 <a href="#mac">Mac 首次打开</a>。</p>
+        </div>
+      </details>
+
+      <p id="mirror-help" class="fine" style="margin-top:14px" data-i18n="dl.mirror">历史版本与完整校验清单见 <a data-release-page href="https://github.com/ginsonko/omnicreator/releases" target="_blank" rel="noopener">GitHub 发布页 ↗</a>，下载缓慢也可在 QQ 群 1131210592 获取群文件。</p>
     </div>
   </section>
 
@@ -687,44 +1248,45 @@
           <h3 data-i18n="dl.win_t">Windows 第一次打开被拦住？</h3>
           <p data-i18n="dl.win_d">内测版尚未购买代码签名，出现蓝色窗口「Windows 已保护你的电脑」时：</p>
           <ol>
-            <li>点击 <b>更多信息</b> → 点击 <b>仍要运行</b>。</li>
-            <li>杀毒软件提示时选择「信任 / 允许」；安装无需管理员权限，一路下一步即可。</li>
+            <li data-i18n="g.win_1">点击 <b>更多信息</b> → 点击 <b>仍要运行</b>。</li>
+            <li data-i18n="g.win_2">杀毒软件提示时选择「信任 / 允许」；安装无需管理员权限，一路下一步即可。</li>
           </ol>
-          <div class="cmd"><code id="cmd-win-sha">Get-FileHash .\文件名.exe -Algorithm SHA256</code><button class="copy-mini" type="button" data-copy-from="cmd-win-sha">复制</button></div>
+          <p class="fine" data-i18n="g.win_keep">浏览器在下载时就拦住了？看上面的 <a href="#keep-guide">「保留」图解</a>。</p>
+          <div class="cmd"><code id="cmd-win-sha" data-i18n="g.win_cmd">Get-FileHash .\文件名.exe -Algorithm SHA256</code><button class="copy-mini" type="button" data-copy-from="cmd-win-sha" data-i18n="ui.copy">复制</button></div>
         </article>
 
         <article id="mac" class="guide rv">
           <h3 data-i18n="dl.mac_t">Mac 首次打开：提示「无法打开」或「已损坏」？</h3>
           <ol>
-            <li>点左上角苹果菜单 →「关于本机」确认 Apple 芯片或 Intel 芯片，将 <b>OmniCreator</b> 拖进「应用程序」。</li>
-            <li><b>macOS 15+：</b>双击一次提示后点「完成」，到「系统设置 → 隐私与安全性」点「仍要打开」。</li>
-            <li><b>macOS 13 / 14：</b>在「应用程序」右键 OmniCreator →「打开」→ 再点「打开」。</li>
+            <li data-i18n="g.mac_1">点左上角苹果菜单 →「关于本机」确认 Apple 芯片或 Intel 芯片，将 <b>OmniCreator</b> 拖进「应用程序」。</li>
+            <li data-i18n="g.mac_2"><b>macOS 15+：</b>双击一次提示后点「完成」，到「系统设置 → 隐私与安全性」点「仍要打开」。</li>
+            <li data-i18n="g.mac_3"><b>macOS 13 / 14：</b>在「应用程序」右键 OmniCreator →「打开」→ 再点「打开」。</li>
           </ol>
-          <p>若提示「已损坏」，在终端运行以下一行后再打开：</p>
-          <div class="cmd"><code id="cmd-mac-xattr">sudo xattr -dr com.apple.quarantine /Applications/OmniCreator.app</code><button class="copy-mini" type="button" data-copy-from="cmd-mac-xattr">复制</button></div>
+          <p data-i18n="g.mac_p">若提示「已损坏」，在终端运行以下一行后再打开：</p>
+          <div class="cmd"><code id="cmd-mac-xattr">sudo xattr -dr com.apple.quarantine /Applications/OmniCreator.app</code><button class="copy-mini" type="button" data-copy-from="cmd-mac-xattr" data-i18n="ui.copy">复制</button></div>
         </article>
 
         <article id="update" class="guide rv">
-          <h3>自动更新：提醒你，但不强迫你</h3>
-          <p>启动 1 分钟后检查一次新版，之后每 6 小时一次。支持 <b>立即更新</b>、<b>稍后</b>、<b>跳过此版本</b>，下载支持断点续传并校验 SHA256，升级保留全部设置和对话。</p>
-          <img src="assets/img/shot-update.webp" alt="自动更新提醒与设置截图" loading="lazy"/>
+          <h3 data-i18n="g.upd_t">自动更新：提醒你，但不强迫你</h3>
+          <p data-i18n="g.upd_d">启动 1 分钟后检查一次新版，之后每 6 小时一次。支持 <b>立即更新</b>、<b>稍后</b>、<b>跳过此版本</b>，下载支持断点续传并校验 SHA256，升级保留全部设置和对话。</p>
+          <img src="assets/img/shot-update.webp" alt="自动更新提醒与设置截图" data-i18n-alt="g.upd_alt" loading="lazy"/>
         </article>
 
         <article id="uninstall" class="guide rv">
-          <h3>怎么卸载？</h3>
-          <div class="tabs" role="tablist" aria-label="不同版本卸载方式">
-            <button id="ut-win" role="tab" type="button" aria-selected="true" aria-controls="up-win">Windows 安装版</button>
-            <button id="ut-port" role="tab" type="button" aria-selected="false" tabindex="-1" aria-controls="up-port">免安装版</button>
+          <h3 data-i18n="g.un_t">怎么卸载？</h3>
+          <div class="tabs" role="tablist" aria-label="不同版本卸载方式" data-i18n-aria-label="a11y.uninstall">
+            <button id="ut-win" role="tab" type="button" aria-selected="true" aria-controls="up-win" data-i18n="g.tab_win">Windows 安装版</button>
+            <button id="ut-port" role="tab" type="button" aria-selected="false" tabindex="-1" aria-controls="up-port" data-i18n="g.tab_port">免安装版</button>
             <button id="ut-mac" role="tab" type="button" aria-selected="false" tabindex="-1" aria-controls="up-mac">Mac</button>
           </div>
           <div id="up-win" class="tab-panel" role="tabpanel">
-            <p>在软件打开「配置 → 关于」点「卸载本软件」，或在 Windows「设置 → 应用」里找到「万能创作终端」卸载。卸载前会先关闭后台进程，并询问是否删除你的数据（默认保留）。</p>
+            <p data-i18n="g.un_win">在软件打开「配置 → 关于」点「卸载本软件」，或在 Windows「设置 → 应用」里找到「万能创作终端」卸载。卸载前会先关闭后台进程，并询问是否删除你的数据（默认保留）。</p>
           </div>
           <div id="up-port" class="tab-panel" role="tabpanel" hidden>
-            <p>若需清理配置与记录，先在「配置 → 关于」点「清除软件数据」，然后删除免安装版的 <code>.exe</code> 文件即可。</p>
+            <p data-i18n="g.un_port">若需清理配置与记录，先在「配置 → 关于」点「清除软件数据」，然后删除免安装版的 <code>.exe</code> 文件即可。</p>
           </div>
           <div id="up-mac" class="tab-panel" role="tabpanel" hidden>
-            <p>退出软件后，把「应用程序」里的 <b>OmniCreator</b> 拖到废纸篓。如需彻底清除数据，在访达前往并删除 <code>~/Library/Application Support/万能创作终端</code>。</p>
+            <p data-i18n="g.un_mac">退出软件后，把「应用程序」里的 <b>OmniCreator</b> 拖到废纸篓。如需彻底清除数据，在访达前往并删除 <code>~/Library/Application Support/万能创作终端</code>。</p>
           </div>
         </article>
       </div>
@@ -732,30 +1294,27 @@
   </section>
 
   <!-- Agent 代装 -->
-  
-<section id="agent" class="section">
-  <div class="wrap agent">
-    <div class="rv">
-      <span class="eyebrow" data-i18n="agent.eyebrow">AGENT INSTALL · AI 代装</span>
-      <h2 style="font-size:clamp(28px,3.8vw,42px);margin:14px 0 14px" data-i18n="agent.title">不想自己点？让 Agent 帮你装。</h2>
-      <p class="muted" data-i18n="agent.lead">复制下面这段话，发给 Codex、Claude Code 或任何能运行命令的 AI 助手。它会自动下载、校验 SHA256、安装并打开软件。</p>
-      <p class="fine" style="margin-top:16px" data-i18n="agent.safe">Agent 会先核对 SHA256 校验值，不一致立刻停下，绝不会向你索要任何 Key 或密码。</p>
-    </div>
-    <div class="agent-box rv">
-      <div class="agent-tabs" role="tablist" aria-label="安装目标">
-        <button role="tab" type="button" data-agent="app" aria-selected="true" data-i18n="agent.t_win">Windows 安装版（推荐）</button>
-        <button role="tab" type="button" data-agent="mac" aria-selected="false" tabindex="-1" data-i18n="agent.t_mac">Mac 版</button>
-        
+  <section id="agent" class="section">
+    <div class="wrap agent">
+      <div class="rv">
+        <span class="eyebrow" data-i18n="agent.eyebrow">AGENT INSTALL · AI 代装</span>
+        <h2 class="h2-sm" data-i18n="agent.title">不想自己点？让 Agent 帮你装。</h2>
+        <p class="muted" data-i18n="agent.lead">复制下面这段话，发给 Codex、Claude Code 或任何能运行命令的 AI 助手。它会自动下载、校验 SHA256、安装并打开软件。</p>
+        <p class="fine" style="margin-top:16px" data-i18n="agent.safe">Agent 会先核对 SHA256 校验值，不一致立刻停下，绝不会向你索要任何 Key 或密码。</p>
       </div>
-      <pre id="agent-text">正在准备安装口令……</pre>
-      <div class="foot">
-        <span>SHA256 校验 · 安全静默安装</span>
-        <button id="agent-copy" class="btn btn-primary" type="button" data-i18n="agent.copy">复制安装口令</button>
+      <div class="agent-box rv">
+        <div class="agent-tabs" role="tablist" aria-label="安装目标" data-i18n-aria-label="a11y.agent">
+          <button role="tab" type="button" data-agent="app" aria-selected="true" data-i18n="agent.t_win">Windows 安装版（推荐）</button>
+          <button role="tab" type="button" data-agent="mac" aria-selected="false" tabindex="-1" data-i18n="agent.t_mac">Mac 版</button>
+        </div>
+        <pre id="agent-text">正在准备安装口令……</pre>
+        <div class="foot">
+          <span data-i18n="agent.foot">SHA256 校验 · 安全静默安装</span>
+          <button id="agent-copy" class="btn btn-primary" type="button" data-i18n="agent.copy">复制安装口令</button>
+        </div>
       </div>
     </div>
-  </div>
-</section>
-
+  </section>
 
   <!-- 常见问题 -->
   <section id="faq" class="section alt">
@@ -764,17 +1323,20 @@
         <span class="eyebrow" data-i18n="faq.eyebrow">FAQ · 常见问题</span>
         <h2 data-i18n="faq.title">开始前，你可能想知道。</h2>
       </div>
-      <div class="faq-cols"><details class="rv"><summary>通用版和原来的 TideVerse 版是什么关系？</summary><div><p>从 0.6.8 起，原通用版与 TideVerse 版合并为统一的「万能创作终端」中性版。老 TideVerse 用户的更新源继续保留，从 TideVerse 版升级会自动接着用原来的记录（对话和配置），不用导入。</p></div></details>
-<details class="rv"><summary>下载和使用软件要花钱吗？</summary><div><p>下载、安装和个人使用软件完全免费。内置 44+ 百宝箱本地工具不花 API 费；调用云端对话、生图、生视频模型时，按你登录的账号或所连接 API 站点的实际用量计费，软件内置账本与消费上限。</p></div></details>
-<details class="rv"><summary>没有 API 站点怎么办？支持哪些站点？</summary><div><p>你可以直接在软件里注册登录官方账号并充值 / 核销兑换码使用，也可以连接任意兼容 OpenAI / new-api 接口的第三方站点（支持手动填地址和 Key，或支持智能路由站点的一键导入）。</p></div></details>
-<details class="rv"><summary>0.6.8 包含桌面常驻宠物功能吗？</summary><div><p>0.6.8 不包含桌面常驻助手 / 桌宠功能。该特性与离线语音陪伴安排在 0.7.0 推出。</p></div></details>
-<details class="rv"><summary>要建几个 Key？文本、生图、视频要分开吗？</summary><div><p>一般一个 Key 就够，填一次全部共用。如果站点把文本、生图、视频分在不同分组，或你想分开看花费，可以在连接表单里给对应项点「单独设置」。</p></div></details>
-<details class="rv"><summary>要不要提前装 Codex、Claude Code 或 Node.js？</summary><div><p>不用提前装。Windows 安装版内置 Codex；免安装版和 Mac 版缺少时，在「配置 → 智能体内核」点「一键安装 Codex」即可，装在软件自己的目录里，不改你电脑原有配置。</p></div></details>
-<details class="rv"><summary>「一键导入」点了没反应怎么办？</summary><div><p>常见于免安装版或浏览器拦截。可在站点弹窗里复制导入码，回软件按 Ctrl+V（Mac 上 ⌘+V）；或下载导入文件，在「配置 → 连接」点「打开导入文件」。导入链接通常 10 分钟内有效、单次可用。</p></div></details>
-<details class="rv"><summary>Key 安全吗？作品保存在哪里？</summary><div><p>Key 用系统自带加密（Windows DPAPI / macOS 钥匙串）保存在本机，不会上传。每个对话有独立的成果文件夹，在右侧「作品」栏点击即可「在文件夹中显示」。</p></div></details>
-<details class="rv"><summary>会强制更新吗？更新会不会丢设置？</summary><div><p>绝不强制更新。有新版时左下角提示，可选「立即更新」「稍后」或「跳过此版本」，下载校验 SHA256，更新保留全部设置和对话。</p></div></details>
-<details class="rv"><summary>合作方想用这个页面托管下载页，怎么配置？</summary><div><p>本站纯静态、兼容 <code>config.json</code> 规范与 <code>check-site.mjs</code> 自动化检查。只需修改 <code>config.json</code> 中的 <code>partner</code> 字段并同步生成 <code>config-fallback.js</code>，详见 <a href="PARTNER_README.md">合作方托管说明</a>。</p></div></details>
-<details class="rv"><summary>公司或学校可以用吗？遇到问题去哪反馈？</summary><div><p>个人使用免费；公司、学校等机构使用需获得授权。软件内按 F1 可随时问帮助助手，也可以加入 QQ 群 1131210592 或前往 GitHub Issues 附带版本号反馈。</p></div></details></div>
+      <div class="faq-cols">
+        <details class="rv"><summary data-i18n="faq.q1">通用版和原来的 TideVerse 版是什么关系？</summary><div><p data-i18n="faq.a1">从 0.6.8 起，原通用版与 TideVerse 版合并为统一的「万能创作终端」中性版。老 TideVerse 用户的更新源继续保留，从 TideVerse 版升级会自动接着用原来的记录（对话和配置），不用导入。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q2">下载和使用软件要花钱吗？</summary><div><p data-i18n="faq.a2">下载、安装和个人使用软件完全免费。内置 44+ 百宝箱本地工具不花 API 费；调用云端对话、生图、生视频模型时，按你登录的账号或所连接 API 站点的实际用量计费，软件内置账本与消费上限。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q3">没有 API 站点怎么办？支持哪些站点？</summary><div><p data-i18n="faq.a3">你可以直接在软件里注册登录官方账号并充值 / 核销兑换码使用，也可以连接任意兼容 OpenAI / new-api 接口的第三方站点（支持手动填地址和 Key，或支持智能路由站点的一键导入）。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q4">浏览器提示「通常不会下载」，或者下载被拦住了怎么办？</summary><div><p data-i18n="faq.a4">这是内测版安装包还没有代码签名时浏览器的常规提示。在下载气泡里点「…」→「保留」（有的版本写作 Keep、保存或「仍然保留」）就能留下文件；随后 Windows 弹出蓝色窗口时点「更多信息 → 仍要运行」。想更放心，可以用下载卡片上的 SHA256 核对文件。<a href="#keep-guide">看图解步骤</a>。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q5">0.7.0 的语音直控和桌面陪伴助手怎么用？</summary><div><p data-i18n="faq.a5">0.7.0 起可以直接开口指挥软件：切页面、开画布、发起创作都能说；桌面陪伴助手常驻桌面，支持离线与在线两种自然语音连聊。不想用语音时，照常打字即可，原有用法都不变。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q6">要建几个 Key？文本、生图、视频要分开吗？</summary><div><p data-i18n="faq.a6">一般一个 Key 就够，填一次全部共用。如果站点把文本、生图、视频分在不同分组，或你想分开看花费，可以在连接表单里给对应项点「单独设置」。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q7">要不要提前装 Codex、Claude Code 或 Node.js？</summary><div><p data-i18n="faq.a7">不用提前装。Windows 安装版内置 Codex；免安装版和 Mac 版缺少时，在「配置 → 智能体内核」点「一键安装 Codex」即可，装在软件自己的目录里，不改你电脑原有配置。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q8">「一键导入」点了没反应怎么办？</summary><div><p data-i18n="faq.a8">常见于免安装版或浏览器拦截。可在站点弹窗里复制导入码，回软件按 Ctrl+V（Mac 上 ⌘+V）；或下载导入文件，在「配置 → 连接」点「打开导入文件」。导入链接通常 10 分钟内有效、单次可用。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q9">Key 安全吗？作品保存在哪里？</summary><div><p data-i18n="faq.a9">Key 用系统自带加密（Windows DPAPI / macOS 钥匙串）保存在本机，不会上传。每个对话有独立的成果文件夹，在右侧「作品」栏点击即可「在文件夹中显示」。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q10">会强制更新吗？更新会不会丢设置？</summary><div><p data-i18n="faq.a10">绝不强制更新。有新版时左下角提示，可选「立即更新」「稍后」或「跳过此版本」，下载校验 SHA256，更新保留全部设置和对话。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q11">合作方想用这个页面托管下载页，怎么配置？</summary><div><p data-i18n="faq.a11">本站纯静态、兼容 <code>config.json</code> 规范与 <code>check-site.mjs</code> 自动化检查。只需修改 <code>config.json</code> 中的 <code>partner</code> 字段并同步生成 <code>config-fallback.js</code>，详见 <a href="PARTNER_README.md">合作方托管说明</a>。</p></div></details>
+        <details class="rv"><summary data-i18n="faq.q12">公司或学校可以用吗？遇到问题去哪反馈？</summary><div><p data-i18n="faq.a12">个人使用免费；公司、学校等机构使用需获得授权。软件内按 F1 可随时问帮助助手，也可以加入 QQ 群 1131210592 或前往 GitHub Issues 附带版本号反馈。</p></div></details>
+      </div>
     </div>
   </section>
 
@@ -783,11 +1345,11 @@
     <div class="wrap community">
       <div class="rv">
         <span class="eyebrow" data-i18n="comm.eyebrow">COMMUNITY · 交流与支持</span>
-        <h2 style="font-size:clamp(28px,3.6vw,40px);margin:12px 0 18px" data-i18n="comm.title">加入用户交流群。</h2>
+        <h2 class="h2-sm" data-i18n="comm.title">加入用户交流群。</h2>
         <div class="qq-card">
           <img src="assets/img/logo-96.webp" alt="万能创作终端图标" width="96" height="96" loading="lazy"/>
           <div>
-            <span class="fine">使用交流 · 群文件镜像 · 机构授权咨询</span>
+            <span class="fine" data-i18n="comm.qq_fine">使用交流 · 群文件镜像 · 机构授权咨询</span>
             <div class="num">1131210592</div>
             <div class="actions">
               <button class="btn btn-primary" type="button" data-copy-cfg="community.qq_group" data-i18n="comm.copy_qq">复制群号</button>
@@ -806,8 +1368,8 @@
           <li data-i18n="comm.lic_3">通过软件生成的作品，请遵守所用模型站点的服务条款和法律法规。</li>
         </ul>
         <div class="actions" style="margin-top:16px">
-          <a class="btn btn-ghost" href="https://github.com/ginsonko/omnicreator/issues" target="_blank" rel="noopener">GitHub 问题反馈 ↗</a>
-          <a class="btn btn-link" href="PARTNER_README.md">合作方托管指南 →</a>
+          <a class="btn btn-ghost" href="https://github.com/ginsonko/omnicreator/issues" target="_blank" rel="noopener" data-i18n="comm.gh">GitHub 问题反馈 ↗</a>
+          <a class="btn btn-link" href="PARTNER_README.md" data-i18n="comm.partner">合作方托管指南 →</a>
         </div>
       </div>
     </div>
@@ -819,8 +1381,9 @@
       <h2 data-i18n="final.title">想做什么，直接说。</h2>
       <p data-i18n="final.sub">免费下载 Windows 与 macOS 版，接入你喜欢的 API 站点，立刻开始创作。</p>
       <div class="dl-pair" style="margin-top:28px">
-        <a class="btn btn-primary" href="#download">立即免费下载</a>
-        <a class="btn btn-ghost" href="#steps">查看三步上手</a>
+        <a class="btn btn-primary" href="#download" data-i18n="final.b1">立即免费下载</a>
+        <a class="btn btn-ghost" href="#showcase" data-i18n="final.b2">再看一眼作品墙</a>
+        <a class="btn btn-ghost" href="#steps" data-i18n="final.b3">查看三步上手</a>
       </div>
     </div>
   </section>
@@ -832,59 +1395,61 @@
       <div>
         <a class="brand" href="#top">
           <img src="assets/img/logo-96.webp" alt="万能创作终端" width="34" height="34"/>
-          <span><b>万能创作终端</b><small>OMNICREATOR</small></span>
+          <span><b data-i18n="brand.name">万能创作终端</b><small data-i18n="brand.sub">OMNICREATOR</small></span>
         </a>
-        <p style="opacity:.78;margin-top:8px">原通用版与 TideVerse 版统一中性官网。纯静态页面，不加载任何境外字体、CDN 或追踪脚本。</p>
+        <p style="opacity:.78;margin-top:8px" data-i18n="foot.desc">原通用版与 TideVerse 版统一中性官网。纯静态页面，不加载任何境外字体、CDN 或追踪脚本。</p>
       </div>
       <div>
-        <h4>产品</h4>
+        <h4 data-i18n="foot.h1">产品</h4>
         <ul>
-          <li><a href="#features">12 大核心功能</a></li>
-          <li><a href="#super">超级导演（27秒合集）</a></li>
-          <li><a href="#changelog">0.6.8 更新说明</a></li>
-          <li><a href="#download">下载</a></li>
+          <li><a href="#showcase" data-i18n="foot.l_wall">全场景真实作品墙</a></li>
+          <li><a href="#features" data-i18n="foot.l_feat">12 大核心功能</a></li>
+          <li><a href="#super" data-i18n="foot.l_super">超级导演（27秒合集）</a></li>
+          <li><a href="#faces" data-i18n="foot.l_faces">千面 10 套界面</a></li>
+          <li><a href="#changelog" data-i18n="foot.l_cl">0.7.0 更新说明</a></li>
+          <li><a href="#download" data-i18n="nav.download">下载</a></li>
         </ul>
       </div>
       <div>
-        <h4>上手与指南</h4>
+        <h4 data-i18n="foot.h2">上手与指南</h4>
         <ul>
-          <li><a href="#steps">三步上手</a></li>
-          <li><a href="#connect">连接 API 站点</a></li>
-          <li><a href="#videos">教程视频</a></li>
-          <li><a href="#mac">Mac 首次打开</a></li>
-          <li><a href="#uninstall">卸载说明</a></li>
+          <li><a href="#steps" data-i18n="nav.start">三步上手</a></li>
+          <li><a href="#connect" data-i18n="foot.l_connect">连接 API 站点</a></li>
+          <li><a href="#videos" data-i18n="nav.videos">教程视频</a></li>
+          <li><a href="#keep-guide" data-i18n="foot.l_keep">下载被拦住？点「保留」图解</a></li>
+          <li><a href="#mac" data-i18n="foot.l_mac">Mac 首次打开</a></li>
+          <li><a href="#uninstall" data-i18n="foot.l_un">卸载说明</a></li>
         </ul>
       </div>
       <div>
-        <h4>文档与合作</h4>
+        <h4 data-i18n="foot.h3">文档与合作</h4>
         <ul>
-          <li><a href="#faq">常见问题</a></li>
-          <li><a href="PARTNER_README.md">合作方托管说明</a></li>
-          <li><a href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E9%80%9A%E7%94%A8%E7%89%88%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener">通用版使用手册 ↗</a></li>
-          <li><a href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E7%AC%AC%E4%B8%89%E6%96%B9%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1%E7%AB%99%E7%82%B9%E6%8E%A5%E5%85%A5%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener">智能路由站接入手册 ↗</a></li>
+          <li><a href="#faq" data-i18n="nav.faq">常见问题</a></li>
+          <li><a href="PARTNER_README.md" data-i18n="foot.l_partner">合作方托管说明</a></li>
+          <li><a href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E9%80%9A%E7%94%A8%E7%89%88%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener" data-i18n="foot.l_manual">通用版使用手册 ↗</a></li>
+          <li><a href="https://github.com/ginsonko/omnicreator/blob/main/docs/%E7%AC%AC%E4%B8%89%E6%96%B9%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1%E7%AB%99%E7%82%B9%E6%8E%A5%E5%85%A5%E6%89%8B%E5%86%8C.md" target="_blank" rel="noopener" data-i18n="foot.l_smart">智能路由站接入手册 ↗</a></li>
         </ul>
       </div>
       <div>
-        <h4>链接</h4>
+        <h4 data-i18n="foot.h4">链接</h4>
         <ul>
-          <li><a href="https://github.com/ginsonko/omnicreator" target="_blank" rel="noopener">GitHub 仓库 ↗</a></li>
-          <li><a data-release-page href="https://github.com/ginsonko/omnicreator/releases" target="_blank" rel="noopener">发布页 ↗</a></li>
-          <li><a href="https://github.com/ginsonko/omnicreator/issues" target="_blank" rel="noopener">问题反馈 ↗</a></li>
+          <li><a href="https://github.com/ginsonko/omnicreator" target="_blank" rel="noopener" data-i18n="foot.l_repo">GitHub 仓库 ↗</a></li>
+          <li><a data-release-page href="https://github.com/ginsonko/omnicreator/releases" target="_blank" rel="noopener" data-i18n="foot.l_rel">发布页 ↗</a></li>
+          <li><a href="https://github.com/ginsonko/omnicreator/issues" target="_blank" rel="noopener" data-i18n="foot.l_issues">问题反馈 ↗</a></li>
           <li><a id="partner-foot" href="#top" target="_blank" rel="noopener" hidden></a></li>
         </ul>
       </div>
     </div>
     <div class="legal">
-      © 2026 万能创作终端 OmniCreator · 个人免费使用，机构使用需授权 · 本站不使用任何统计或追踪脚本。<span id="partner-foot-note"></span>
+      <span data-i18n="foot.legal">© 2026 万能创作终端 OmniCreator · 个人免费使用，机构使用需授权 · 本站不使用任何统计或追踪脚本。</span><span id="partner-foot-note"></span>
     </div>
   </div>
 </footer>
 
-
 <dialog id="video-dialog" aria-labelledby="vd-title">
   <div class="vd-top">
     <h3 id="vd-title">视频播放</h3>
-    <button id="vd-close" type="button" aria-label="关闭视频">×</button>
+    <button id="vd-close" type="button" aria-label="关闭视频" data-i18n-aria-label="a11y.vd_close">×</button>
   </div>
   <div id="vd-stage"></div>
   <div id="vd-chapters"></div>

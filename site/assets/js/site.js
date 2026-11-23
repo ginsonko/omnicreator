@@ -1,4 +1,6 @@
-﻿/* 站点共享交互脚本：下载卡片渲染、中英日语言切换、视频弹窗与章节跳转、Agent 代装口令、合作方托管兼容。纯原生 JS，无外部依赖与追踪。 */
+/* 站点核心脚本：四语切换（简 / 繁體 / EN / 日本語）、下载卡片渲染、视频弹窗与章节跳转、Agent 代装口令、合作方托管兼容。
+   纯原生 JS，无外部依赖与追踪。视觉与性能层（流畅模式、Canvas 舞台、作品墙、千面、下载引导）在 fx.js，
+   通过 window.OC 复用这里的工具函数；fx.js 加载失败时，本文件负责的内容与下载功能照常可用。 */
 (function () {
   'use strict';
 
@@ -31,89 +33,133 @@
     (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
     return n;
   }
+  // 把 {name} 这样的占位符换成实际值
+  function fill(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
 
-  /* ---------- language ---------- */
-  var LANGS = ['zh', 'en', 'ja'];
+  /* ---------- 语言：简体中文写在 HTML 里，其余三种语言的词典在 i18n.js ---------- */
+  var LANGS = ['zh', 'zh-TW', 'en', 'ja'];
+  var HTML_LANG = { zh: 'zh-CN', 'zh-TW': 'zh-TW', en: 'en', ja: 'ja' };
   var lang = 'zh';
+  function normLang(s) {
+    s = String(s || '').toLowerCase();
+    if (/^zh[-_](tw|hk|mo|hant)/.test(s)) return 'zh-TW';
+    if (s === 'zh' || /^zh[-_]/.test(s)) return 'zh';
+    if (s.indexOf('en') === 0) return 'en';
+    if (s.indexOf('ja') === 0) return 'ja';
+    return '';
+  }
+  // 优先级：网址里的 ?lang= → 上次手动选的 → 浏览器语言 → 简体中文
   function pickLang() {
-    var q = (location.search.match(/[?&]lang=(zh|en|ja)\b/) || [])[1];
+    var q = normLang((location.search.match(/[?&]lang=([\w-]+)/) || [])[1]);
     if (q) return q;
     try { var s = localStorage.getItem('site-lang'); if (LANGS.indexOf(s) !== -1) return s; } catch (e) {}
-    var n = (navigator.language || '').toLowerCase();
-    if (n.indexOf('ja') === 0) return 'ja';
-    if (n && n.indexOf('zh') !== 0 && n.indexOf('en') === 0) return 'en';
-    return 'zh';
+    return normLang(navigator.language) || 'zh';
   }
-  // Runtime strings (download cards, toasts, dialogs). Page copy itself lives in i18n.js.
-  var UI = {
-    copied: { zh: '已复制', en: 'Copied', ja: 'コピーしました' },
-    copyFail: { zh: '复制失败，请手动选择文字复制', en: 'Copy failed. Please select the text and copy it by hand.', ja: 'コピーできませんでした。文字を選択して手動でコピーしてください。' },
-    copyPrompt: { zh: '已复制，粘贴到软件输入框就能用', en: 'Copied. Paste it into the app\u2019s input box.', ja: 'コピーしました。アプリの入力欄に貼り付けてください。' },
-    copyAgent: { zh: '已复制，粘贴发给你的 Agent 就行', en: 'Copied. Paste it to your agent.', ja: 'コピーしました。エージェントに貼り付けて送ってください。' },
-    copyGroup: { zh: '群号已复制', en: 'Group number copied', ja: 'グループ番号をコピーしました' },
-    copySha: { zh: 'SHA256 已复制', en: 'SHA256 copied', ja: 'SHA256 をコピーしました' },
-    copyCmd: { zh: '已复制命令', en: 'Command copied', ja: 'コマンドをコピーしました' },
-    copyLink: { zh: '下载页链接已复制，到电脑上打开就行', en: 'Link copied. Open it on your computer.', ja: 'リンクをコピーしました。パソコンで開いてください。' },
-    copy: { zh: '复制', en: 'Copy', ja: 'コピー' },
-    mirror: { zh: '国内高速下载', en: 'Download (China mirror)', ja: 'ダウンロード（中国ミラー）' },
-    github: { zh: '备用下载（GitHub）', en: 'Download (GitHub)', ja: 'ダウンロード（GitHub）' },
-    githubOnly: { zh: '下载（GitHub）', en: 'Download (GitHub)', ja: 'ダウンロード（GitHub）' },
-    forYou: { zh: '适合你的电脑', en: 'For your computer', ja: 'お使いのパソコン向け' },
-    shaPending: { zh: '发布后更新', en: 'Available after release', ja: '公開後に掲載' },
-    sizePending: { zh: '大小发布后更新', en: 'size after release', ja: 'サイズは公開後' },
-    winSetup: { zh: 'Windows 安装版', en: 'Windows installer', ja: 'Windows インストーラー版' },
-    winPortable: { zh: 'Windows 免安装版', en: 'Windows portable', ja: 'Windows ポータブル版' },
-    macArm: { zh: 'Mac · Apple 芯片', en: 'Mac · Apple silicon', ja: 'Mac · Apple シリコン' },
-    macIntel: { zh: 'Mac · Intel 芯片', en: 'Mac · Intel', ja: 'Mac · Intel' },
-    noteSetup: { zh: '推荐。有桌面快捷方式和开始菜单，以后在软件里点「立即更新」就能升级。', en: 'Recommended. Desktop and Start-menu shortcuts; later updates install from inside the app.', ja: 'おすすめ。デスクトップとスタートメニューにショートカットができ、以降の更新はアプリ内から行えます。' },
-    notePortable: { zh: '放在任意文件夹或 U 盘里，双击就能用；第一次启动要先解压，会慢一点。', en: 'Runs from any folder or USB stick. The first start unpacks itself, so it is a little slower.', ja: '任意のフォルダや USB メモリから起動できます。初回は展開のため少し時間がかかります。' },
-    noteArm: { zh: 'M1 / M2 / M3 / M4 及更新的 Mac，macOS 13 及以上。双击 dmg，把 OmniCreator 拖进「应用程序」。', en: 'M1 / M2 / M3 / M4 and newer, macOS 13 or later. Open the dmg and drag OmniCreator into Applications.', ja: 'M1 / M2 / M3 / M4 以降、macOS 13 以上。dmg を開き OmniCreator を「アプリケーション」へドラッグします。' },
-    noteIntel: { zh: 'Intel 处理器的 Mac，macOS 13 及以上。Apple 芯片的 Mac 请选左边那个，更快。', en: 'Macs with an Intel processor, macOS 13 or later. Apple-silicon Macs should take the other one.', ja: 'Intel プロセッサ搭載の Mac、macOS 13 以上。Apple シリコンの Mac は左の版をお選びください。' },
-    heroWin: { zh: 'Windows 下载', en: 'Download for Windows', ja: 'Windows 版をダウンロード' },
-    heroMac: { zh: 'Mac 下载', en: 'Download for Mac', ja: 'Mac 版をダウンロード' },
-    heroPc: { zh: '复制链接，到电脑上下载', en: 'Copy link for your computer', ja: 'リンクをコピーしてパソコンで' },
-    free: { zh: '免费', en: 'free', ja: '無料' },
-    detWin: { zh: '已识别为 Windows。要免安装版、Mac 版或校验值？', en: 'Detected Windows. Need the portable build, the Mac build or checksums?', ja: 'Windows を検出しました。ポータブル版・Mac 版・チェックサムはこちら' },
-    detArm: { zh: '已识别为 Apple 芯片的 Mac。是 Intel 芯片或想要别的版本？', en: 'Detected an Apple-silicon Mac. Intel Mac, or another build?', ja: 'Apple シリコンの Mac を検出しました。Intel 版やほかの版はこちら' },
-    detIntel: { zh: '已识别为 Intel 芯片的 Mac。不确定芯片或想要别的版本？', en: 'Detected an Intel Mac. Not sure, or need another build?', ja: 'Intel の Mac を検出しました。ほかの版はこちら' },
-    detMobile: { zh: '这是电脑软件，手机上装不了。先收藏本页，或复制链接到电脑上打开。', en: 'This is desktop software and cannot be installed on a phone. Bookmark this page or copy the link to your computer.', ja: 'パソコン用ソフトのため、スマホにはインストールできません。リンクをコピーしてパソコンで開いてください。' },
-    detOther: { zh: 'Windows 10 / 11（64 位）· macOS 13 及以上 · 全部版本和校验值', en: 'Windows 10 / 11 (64-bit) · macOS 13+ · all builds and checksums', ja: 'Windows 10 / 11（64 ビット）· macOS 13 以上 · すべての版とチェックサム' },
-    soon: { zh: '视频正在制作中，上线后会放在这里', en: 'This video is still being made. It will appear here when ready.', ja: '動画は制作中です。公開されたらここに掲載します。' },
-    chapters: { zh: '章节（点一下跳到那里）', en: 'Chapters (click to jump)', ja: 'チャプター（クリックで移動）' },
-    chaptersSoon: { zh: '章节（视频上线后可点击跳转）', en: 'Chapters (clickable once the video is out)', ja: 'チャプター（公開後にクリックで移動）' },
-    openNew: { zh: '在新窗口打开 ↗', en: 'Open in a new window ↗', ja: '新しいウィンドウで開く ↗' },
-    play: { zh: '播放：', en: 'Play: ', ja: '再生：' },
-    soonLabel: { zh: '即将上线：', en: 'Coming soon: ', ja: '公開予定：' },
-    menuOpen: { zh: '打开菜单', en: 'Open menu', ja: 'メニューを開く' },
-    menuClose: { zh: '关闭菜单', en: 'Close menu', ja: 'メニューを閉じる' },
-    released: { zh: ' 发布', en: ' released', ja: ' 公開' },
-    mirrorHelp: { zh: '「国内高速下载」走本站服务器，文件和 GitHub 上的完全一样，可以用 SHA256 核对。', en: 'The China mirror serves the same files as GitHub; compare the SHA256 to be sure.', ja: '中国ミラーは GitHub と同じファイルです。SHA256 で確認できます。' }
+  // 运行时文案（下载卡片、提示条、弹窗）的简体中文原文；其余语言在 i18n.js 的 ui.* 里。
+  var UIZH = {
+    copied: '已复制',
+    copyFail: '复制失败，请手动选择文字复制',
+    copyPrompt: '已复制，粘贴到软件输入框就能用',
+    copyAgent: '已复制，粘贴发给你的 Agent 就行',
+    copyGroup: '群号已复制',
+    copySha: 'SHA256 已复制',
+    copyCmd: '已复制命令',
+    copyLink: '下载页链接已复制，到电脑上打开就行',
+    copy: '复制',
+    mirror: '国内高速下载',
+    github: '备用下载（GitHub）',
+    githubOnly: '下载（GitHub）',
+    forYou: '适合你的电脑',
+    shaPending: '发布后更新',
+    sizePending: '大小发布后更新',
+    winSetup: 'Windows 安装版',
+    winPortable: 'Windows 免安装版',
+    macArm: 'Mac · Apple 芯片',
+    macIntel: 'Mac · Intel 芯片',
+    noteSetup: '推荐。有桌面快捷方式和开始菜单，以后在软件里点「立即更新」就能升级。',
+    notePortable: '放在任意文件夹或 U 盘里，双击就能用；第一次启动要先解压，会慢一点。',
+    noteArm: 'M1 / M2 / M3 / M4 及更新的 Mac，macOS 13 及以上。双击 dmg，把 OmniCreator 拖进「应用程序」。',
+    noteIntel: 'Intel 处理器的 Mac，macOS 13 及以上。Apple 芯片的 Mac 请选左边那个，更快。',
+    heroWin: 'Windows 下载',
+    heroMac: 'Mac 下载',
+    heroPc: '复制链接，到电脑上下载',
+    free: '免费',
+    detWin: '已识别为 Windows。要免安装版、Mac 版或校验值？',
+    detArm: '已识别为 Apple 芯片的 Mac。是 Intel 芯片或想要别的版本？',
+    detIntel: '已识别为 Intel 芯片的 Mac。不确定芯片或想要别的版本？',
+    detMobile: '这是电脑软件，手机上装不了。先收藏本页，或复制链接到电脑上打开。',
+    detOther: 'Windows 10 / 11（64 位）· macOS 13 及以上 · 全部版本和校验值',
+    soon: '视频正在制作中，上线后会放在这里',
+    chapters: '章节（点一下跳到那里）',
+    chaptersSoon: '章节（视频上线后可点击跳转）',
+    openNew: '在新窗口打开 ↗',
+    play: '播放：',
+    soonLabel: '即将上线：',
+    playBtn: '播放',
+    pauseBtn: '暂停',
+    muteBtn: '静音',
+    unmuteBtn: '取消静音',
+    menuOpen: '打开菜单',
+    menuClose: '关闭菜单',
+    released: ' 发布',
+    mirrorHelp: '「国内高速下载」走本站服务器，文件和 GitHub 上的完全一样，可以用 SHA256 核对。',
+    // 流畅模式与下载引导（fx.js 使用）
+    perfOn: '已开启流畅模式：关闭重动效，低配电脑更顺',
+    perfOff: '已恢复完整动效',
+    perfAuto: '检测到画面不够流畅，已自动切到流畅模式（点 ⚡ 可以切回）',
+    keepWin: '开始下载了。浏览器若提示「通常不会下载」，点 … →「保留」就行，图解已展开',
+    keepMac: '开始下载了。Mac 第一次打开要手动放行，步骤已展开',
+    voListen: '正在听…',
+    voWork: '听懂了，分派中',
+    voDone: '已交付 ✓',
+    // 合作方托管
+    pPre: '本页由',
+    pPost: '托管',
+    pContactTop: '· 客服：{contact}',
+    pContact: '{name} 的客服 / 交流方式：{contact}',
+    pStep2: '在 {name} 注册、充值，进入「令牌 / API Key」页面准备 Key；或者直接在软件里登录官方账号。',
+    pCta: '{name} 支持智能路由和一键导入，推荐用这种方式。',
+    pManual: '在 {name} 按这个方法创建 Key 并手动配置。',
+    pRegister: '去 {name} 注册',
+    pTokens: '打开令牌页',
+    pFoot: ' 本页由 {name} 托管。'
   };
-  function u(k) { var e = UI[k]; return e ? (e[lang] || e.zh) : k; }
+  function dict() { return (lang !== 'zh' && I18N[lang]) || {}; }
+  // u：运行时文案；t：页面词典里的任意 key，取不到就用 fallback（通常是 HTML 里的简体原文）
+  function u(k) { var v = dict()['ui.' + k]; return v != null ? v : (UIZH[k] != null ? UIZH[k] : k); }
+  function t(key, fallback) { var v = key ? dict()[key] : null; return v != null ? v : fallback; }
+  // 轮播文案（首屏打字机、语音演示）：data-lines 是简体原文，其余语言取词典里的数组
+  function lines(node) {
+    var v = dict()[node.getAttribute('data-lines-key')];
+    if (Array.isArray(v) && v.length) return v;
+    try { return JSON.parse(node.getAttribute('data-lines') || '[]'); } catch (e) { return []; }
+  }
   var langListeners = [];
   function applyLang(next, save) {
     lang = LANGS.indexOf(next) === -1 ? 'zh' : next;
-    root.setAttribute('lang', lang === 'zh' ? 'zh-CN' : lang);
+    root.setAttribute('lang', HTML_LANG[lang]);
     root.setAttribute('data-lang', lang);
-    var dict = I18N[lang] || {};
+    var d = dict();
+    // 第一次切换前把简体原文存进 data-zh，切回简体时原样还原
     $$('[data-i18n]').forEach(function (n) {
       var k = n.getAttribute('data-i18n');
       if (!n.hasAttribute('data-zh')) n.setAttribute('data-zh', n.innerHTML);
-      var v = lang === 'zh' ? n.getAttribute('data-zh') : dict[k];
-      if (v != null) n.innerHTML = v;
+      var v = lang === 'zh' ? n.getAttribute('data-zh') : d[k];
+      if (typeof v === 'string') n.innerHTML = v;
     });
     ['alt', 'aria-label', 'title', 'placeholder'].forEach(function (attr) {
       $$('[data-i18n-' + attr + ']').forEach(function (n) {
         var k = n.getAttribute('data-i18n-' + attr);
         var keep = 'data-zh-' + attr;
         if (!n.hasAttribute(keep)) n.setAttribute(keep, n.getAttribute(attr) || '');
-        var v = lang === 'zh' ? n.getAttribute(keep) : dict[k];
-        if (v != null) n.setAttribute(attr, v);
+        var v = lang === 'zh' ? n.getAttribute(keep) : d[k];
+        if (typeof v === 'string') n.setAttribute(attr, v.replace(/<[^>]+>/g, ''));
       });
     });
-    var t = dict.__title;
-    document.title = lang === 'zh' ? (root.getAttribute('data-zh-title') || document.title) : (t || document.title);
+    document.title = lang === 'zh' ? (root.getAttribute('data-zh-title') || document.title) : (d.__title || document.title);
     $$('[data-lang-btn]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-lang-btn') === lang)); });
+    var sel = $('#lang-select');
+    if (sel) sel.value = lang;
     if (save) { try { localStorage.setItem('site-lang', lang); } catch (e) {} }
     langListeners.forEach(function (f) { f(); });
   }
@@ -121,12 +167,12 @@
   /* ---------- toast + clipboard (only when the visitor clicks a copy button) ---------- */
   var toastTimer;
   function toast(msg) {
-    var t = $('#toast');
-    if (!t) return;
-    t.textContent = msg;
-    t.classList.add('show');
+    var box = $('#toast');
+    if (!box) return;
+    box.textContent = msg;
+    box.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
+    toastTimer = setTimeout(function () { box.classList.remove('show'); }, 2800);
   }
   function copy(text, label) {
     var done = function () { toast(label || u('copied')); };
@@ -163,6 +209,7 @@
         plugin_repo: R.plugin_repo
       });
     }
+    // file:// 下浏览器不让读 config.json，改用 config-fallback.js 里的同一份配置，所以双击 index.html 也不会报错
     var fb = window.__OC_CONFIG_FALLBACK__ || null;
     if (location.protocol === 'file:' || !window.fetch) return Promise.resolve(fb);
     return fetch('config.json', { cache: 'no-cache' })
@@ -219,7 +266,7 @@
     svg.appendChild(p);
     return svg;
   }
-  // 合作方配置模式下，中文访问时保留 config.json 中自定义的标签与说明。
+  // 合作方配置模式下，简体中文访问时保留 config.json 中自定义的标签与说明。
   function assetLabel(id, a) { return (SOURCE !== 'release-js' && lang === 'zh' && !pending(a.label)) ? a.label : u(ASSET_TEXT[id][0]); }
   function assetNote(id, a) { return (SOURCE !== 'release-js' && lang === 'zh' && !pending(a.note)) ? a.note : u(ASSET_TEXT[id][1]); }
   function primaryUrl(a, page) { return safeUrl(a.mirror) || safeUrl(a.url) || page; }
@@ -274,6 +321,7 @@
       if (!pending(note) && lang === 'zh') help.textContent = note;
       else if (anyMirror) help.textContent = u('mirrorHelp');
     }
+    // 版本号一律以 config.json 为准：发版脚本只改 config，页面上所有 [data-ver] 跟着变
     $$('[data-ver]').forEach(function (n) { n.textContent = rel.version || n.textContent; });
     var date = rel.date;
     $$('.release-date').forEach(function (n) { n.textContent = pending(date) ? '' : ' · ' + date + u('released'); });
@@ -300,7 +348,7 @@
     set(win, A.win_setup, u('heroWin'), !isMac);
     set(mac, A[macId], u('heroMac') + (PLATFORM === 'mac-intel' ? ' · Intel' : ' · Apple'), isMac);
     var pcBtn = $('#hero-dl-pc');
-    if (pcBtn) pcBtn.hidden = PLATFORM !== 'mobile';
+    if (pcBtn) { pcBtn.hidden = PLATFORM !== 'mobile'; pcBtn.textContent = u('heroPc'); }
     if (detect) {
       detect.textContent = PLATFORM === 'win' ? u('detWin') : PLATFORM === 'mac-arm' ? u('detArm') : PLATFORM === 'mac-intel' ? u('detIntel') : PLATFORM === 'mobile' ? u('detMobile') : u('detOther');
     }
@@ -318,7 +366,8 @@
   function chaptersOf(v) {
     return (Array.isArray(v.chapters) ? v.chapters : []).filter(function (c) { return c && c.title; }).map(function (c) {
       var sec = toSeconds(c.start);
-      return { title: String(c.title), start: typeof c.start === 'number' ? fmt(c.start) : String(c.start == null ? '' : c.start).trim(), sec: sec };
+      // 章节标题来自 config.json（简体）；词典里有 "ch.<原标题>" 时显示译文
+      return { title: t('ch.' + c.title, String(c.title)), start: typeof c.start === 'number' ? fmt(c.start) : String(c.start == null ? '' : c.start).trim(), sec: sec };
     });
   }
   function chapterList(chs, onPick, cls) {
@@ -348,7 +397,7 @@
       var img = $('img', card), btn = $('.video-poster', card);
       var poster = safeUrl(v.poster);
       if (poster && img && !card.hasAttribute('data-keep-poster')) img.setAttribute('src', poster);
-      // 合作方配置可覆盖中文标题与简介；多语言文案由 i18n.js 接管。
+      // 合作方配置可覆盖简体中文标题与简介；其余语言由 i18n.js 接管。
       if (SOURCE !== 'release-js' && lang === 'zh' && !card.hasAttribute('data-keep-copy')) {
         var h = $('h3', card), p = $('p', card);
         if (v.title && h) h.textContent = v.title + (v.duration ? ' · ' + v.duration : '');
@@ -440,38 +489,59 @@
   }
 
   /* ---------- Agent install prompts ---------- */
-  // Per-site wording for the prompts comes from the page (window.SITE_BRAND), so this file carries no brand names.
+  // 口令模板的简体原文；其余语言在 i18n.js 的 ag.* 里（日文沿用英文模板）。品牌相关的措辞来自页面里的 window.SITE_BRAND。
   var BRAND = window.SITE_BRAND || { app: '万能创作终端', next: '打开软件后注册或登录账号，就可以开始创作了。', key: '不要向我索要任何 Key 或密码，也不要把它们写进文件或命令。' };
-  function shaLine(f, page) {
-    if (f && /^[0-9a-f]{64}$/i.test(f.sha256 || '')) return f.sha256;
-    return '（网页上还没有这一版的校验值：请打开 ' + (page || '发布页') + ' ，用发布页附带的 SHA256SUMS 里 ' + (f && f.file || '对应文件') + ' 那一行；找不到就停下来告诉我，不要运行它）';
-  }
-  function agentWin() {
-    var rel = CFG.release, f = rel.assets.win_setup, b = BRAND;
-    if (!f) return '';
-    var p = '$env:USERPROFILE\\Downloads\\' + f.file;
-    var src = safeUrl(f.mirror) ? '   - 首选国内镜像：' + f.mirror + '\n   - 备用 GitHub：' + f.url : '   - 下载地址：' + f.url;
-    return '请帮我在这台 Windows 电脑上安装并打开「' + b.app + '」（v' + rel.version + '，Windows 10/11 64 位）。\n\n' +
-      '1. 下载安装包 ' + f.file + '，保存到当前用户的「下载」文件夹：\n' + src + '\n   PowerShell 示例：\n   $ProgressPreference = \'SilentlyContinue\'\n   Invoke-WebRequest -Uri "<上面的地址>" -OutFile "' + p + '"\n\n' +
-      '2. 校验完整性（必须通过才能继续）：\n   (Get-FileHash "' + p + '" -Algorithm SHA256).Hash\n   结果必须等于（不区分大小写）：\n   ' + shaLine(f, rel.release_page) + '\n   不一致就删除这个文件，换另一个地址重新下载；都不一致就停下来告诉我，不要运行它。\n\n' +
-      '3. 校验通过后静默安装（只装给当前用户，不需要管理员权限）：\n   Start-Process -FilePath "' + p + '" -ArgumentList \'' + (f.silent || '/S') + '\' -Wait\n   如果 Windows 弹出「已保护你的电脑」，请提醒我点「更多信息 → 仍要运行」。\n\n' +
-      '4. 安装完成后，用桌面或开始菜单里的「' + b.app + '」快捷方式启动，确认窗口已经打开。\n\n' +
-      '5. 最后告诉我下一步：' + b.next + '\n\n注意：' + b.key;
-  }
-  function agentMac() {
-    var rel = CFG.release, fa = rel.assets.mac_arm64, fx = rel.assets.mac_x64, b = BRAND;
-    if (!fa || !fx) return '这一版的 Mac 安装包信息还没有发布，请稍后再来复制。';
-    var line = function (f, chip) {
-      return '   - ' + chip + '：' + f.file + '\n' + (safeUrl(f.mirror) ? '     国内镜像：' + f.mirror + '\n     备用 GitHub：' + f.url : '     下载地址：' + f.url) + '\n     SHA256：' + shaLine(f, rel.release_page);
-    };
-    return '请帮我在这台 Mac 上安装并打开「' + b.app + '」（v' + rel.version + '，需要 macOS 13 及以上）。\n\n' +
-      '1. 先运行 uname -m 判断芯片：arm64 是 Apple 芯片，x86_64 是 Intel。选对应的安装包：\n' + line(fa, 'Apple 芯片（arm64）') + '\n' + line(fx, 'Intel（x86_64）') + '\n\n' +
+  var AGZH = {
+    win: '请帮我在这台 Windows 电脑上安装并打开「{app}」（v{ver}，Windows 10/11 64 位）。\n\n' +
+      '1. 下载安装包 {file}，保存到当前用户的「下载」文件夹：\n{src}\n   PowerShell 示例：\n   $ProgressPreference = \'SilentlyContinue\'\n   Invoke-WebRequest -Uri "<上面的地址>" -OutFile "{path}"\n\n' +
+      '2. 校验完整性（必须通过才能继续）：\n   (Get-FileHash "{path}" -Algorithm SHA256).Hash\n   结果必须等于（不区分大小写）：\n   {sha}\n   不一致就删除这个文件，换另一个地址重新下载；都不一致就停下来告诉我，不要运行它。\n\n' +
+      '3. 校验通过后静默安装（只装给当前用户，不需要管理员权限）：\n   Start-Process -FilePath "{path}" -ArgumentList \'{silent}\' -Wait\n   如果 Windows 弹出「已保护你的电脑」，请提醒我点「更多信息 → 仍要运行」。\n\n' +
+      '4. 安装完成后，用桌面或开始菜单里的「{app}」快捷方式启动，确认窗口已经打开。\n\n' +
+      '5. 最后告诉我下一步：{next}\n\n注意：{key}',
+    src_mirror: '   - 首选国内镜像：{mirror}\n   - 备用 GitHub：{url}',
+    src_one: '   - 下载地址：{url}',
+    sha_missing: '（网页上还没有这一版的校验值：请打开 {page} ，用发布页附带的 SHA256SUMS 里 {file} 那一行；找不到就停下来告诉我，不要运行它）',
+    page: '发布页',
+    file: '对应文件',
+    mac: '请帮我在这台 Mac 上安装并打开「{app}」（v{ver}，需要 macOS 13 及以上）。\n\n' +
+      '1. 先运行 uname -m 判断芯片：arm64 是 Apple 芯片，x86_64 是 Intel。选对应的安装包：\n{arm}\n{x64}\n\n' +
       '2. 用 curl 下载到「下载」文件夹，例如：\n   curl -L --fail -o ~/Downloads/<文件名> "<上面的地址>"\n\n' +
       '3. 校验完整性（必须通过才能继续）：\n   shasum -a 256 ~/Downloads/<文件名>\n   结果必须等于上面对应的 SHA256。不一致就删除文件，换另一个地址重新下载；都不一致就停下来告诉我，不要打开它。\n\n' +
       '4. 校验通过后安装：\n   hdiutil attach -nobrowse ~/Downloads/<文件名>\n   把挂载出来的卷里的 OmniCreator.app 复制到 /Applications（已存在旧版就先退出软件再覆盖），然后 hdiutil detach 那个卷。\n\n' +
       '5. 打开软件：open -a /Applications/OmniCreator.app\n   这个应用还没有 Apple 签名。如果提示「无法验证开发者」，请提醒我到「系统设置 → 隐私与安全性」点「仍要打开」（macOS 13 / 14 也可以在「应用程序」里右键 OmniCreator →「打开」）。如果提示「已损坏」，请让我自己在「终端」运行：sudo xattr -dr com.apple.quarantine /Applications/OmniCreator.app\n\n' +
       '6. Mac 版不内置 Codex：软件打开后如果提示缺少 Codex，请提醒我在软件里点「一键安装 Codex」（不需要 Node.js）。\n\n' +
-      '7. 最后告诉我下一步：' + b.next + '\n\n注意：你自己不要用 sudo 运行任何命令，需要管理员密码的那一步由我来做；' + b.key;
+      '7. 最后告诉我下一步：{next}\n\n注意：你自己不要用 sudo 运行任何命令，需要管理员密码的那一步由我来做；{key}',
+    mac_line_mirror: '   - {chip}：{file}\n     国内镜像：{mirror}\n     备用 GitHub：{url}\n     SHA256：{sha}',
+    mac_line_one: '   - {chip}：{file}\n     下载地址：{url}\n     SHA256：{sha}',
+    mac_pending: '这一版的 Mac 安装包信息还没有发布，请稍后再来复制。',
+    chip_arm: 'Apple 芯片（arm64）',
+    chip_x64: 'Intel（x86_64）'
+  };
+  function ag(k) { return t('ag.' + k, AGZH[k]); }
+  function brandText(k) { return lang === 'zh' ? BRAND[k] : t('ag.brand_' + k, BRAND[k]); }
+  function shaLine(f, page) {
+    if (f && /^[0-9a-f]{64}$/i.test(f.sha256 || '')) return f.sha256;
+    return fill(ag('sha_missing'), { page: page || ag('page'), file: (f && f.file) || ag('file') });
+  }
+  function agentWin() {
+    var rel = CFG.release, f = rel.assets.win_setup;
+    if (!f) return '';
+    var src = safeUrl(f.mirror) ? fill(ag('src_mirror'), { mirror: f.mirror, url: f.url }) : fill(ag('src_one'), { url: f.url });
+    return fill(ag('win'), {
+      app: brandText('app'), ver: rel.version, file: f.file, src: src, path: '$env:USERPROFILE\\Downloads\\' + f.file,
+      sha: shaLine(f, rel.release_page), silent: f.silent || '/S', next: brandText('next'), key: brandText('key')
+    });
+  }
+  function agentMac() {
+    var rel = CFG.release, fa = rel.assets.mac_arm64, fx = rel.assets.mac_x64;
+    if (!fa || !fx) return ag('mac_pending');
+    var line = function (f, chip) {
+      return fill(ag(safeUrl(f.mirror) ? 'mac_line_mirror' : 'mac_line_one'), { chip: chip, file: f.file, mirror: f.mirror, url: f.url, sha: shaLine(f, rel.release_page) });
+    };
+    return fill(ag('mac'), {
+      app: brandText('app'), ver: rel.version, arm: line(fa, ag('chip_arm')), x64: line(fx, ag('chip_x64')),
+      next: brandText('next'), key: brandText('key')
+    });
   }
   function agentPlugin() {
     var repo = (CFG.plugin_repo && safeUrl(CFG.plugin_repo)) || '';
@@ -483,9 +553,9 @@
     var box = $('#agent-text');
     if (!box || !CFG) return;
     agentCur = key;
-    $$('.agent-tabs [role="tab"]').forEach(function (t) {
-      var on = t.getAttribute('data-agent') === key;
-      t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; if (on && focus) t.focus();
+    $$('.agent-tabs [role="tab"]').forEach(function (tab) {
+      var on = tab.getAttribute('data-agent') === key;
+      tab.setAttribute('aria-selected', String(on)); tab.tabIndex = on ? 0 : -1; if (on && focus) tab.focus();
     });
     box.textContent = key === 'mac' ? agentMac() : key === 'plugin' ? agentPlugin() : agentWin();
     $$('[data-agent-note]').forEach(function (n) { n.hidden = n.getAttribute('data-agent-note') !== key; });
@@ -493,9 +563,9 @@
   function initAgent() {
     var tabs = $$('.agent-tabs [role="tab"]');
     if (!tabs.length) return;
-    tabs.forEach(function (t, i) {
-      t.addEventListener('click', function () { showAgent(t.getAttribute('data-agent')); });
-      t.addEventListener('keydown', function (e) {
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () { showAgent(tab.getAttribute('data-agent')); });
+      tab.addEventListener('keydown', function (e) {
         var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
         if (!d) return;
         var n = tabs[(i + d + tabs.length) % tabs.length];
@@ -509,7 +579,7 @@
     showAgent(/^mac/.test(PLATFORM) ? 'mac' : 'app');
   }
 
-  /* ---------- 中性版: partner hosting (config.json partner block) ---------- */
+  /* ---------- 中性版：合作方托管（config.json 的 partner 字段）。可重复执行，切换语言后会重新渲染 ---------- */
   function renderPartner() {
     if (!CFG || !$('#partner-bar')) return;
     var p = CFG.partner || {};
@@ -517,46 +587,52 @@
     if (qqLink && $('#qq-link')) { var q = $('#qq-link'); q.href = qqLink; q.hidden = false; }
     if (!p.enabled || pending(p.name)) return;
     var url = safeUrl(p.url);
+    var name = { name: p.name, contact: p.contact };
     $('#partner-name').textContent = p.name;
+    if ($('#partner-pre')) $('#partner-pre').textContent = u('pPre');
+    if ($('#partner-post')) $('#partner-post').textContent = u('pPost');
     if (url) $('#partner-link').href = url; else $('#partner-link').removeAttribute('href');
     var logo = safeUrl(p.logo);
     if (logo) { var img = $('#partner-logo'); img.src = logo; img.alt = p.name; img.hidden = false; }
     if (!pending(p.contact)) {
-      $('#partner-contact-top').textContent = '· 客服：' + p.contact;
+      $('#partner-contact-top').textContent = fill(u('pContactTop'), name);
       $('#partner-contact-top').hidden = false;
-      $('#partner-contact').textContent = p.name + ' 的客服 / 交流方式：' + p.contact;
+      $('#partner-contact').textContent = fill(u('pContact'), name);
       $('#partner-contact').hidden = false;
     }
     $('#partner-bar').hidden = false;
     if (!pending(p.notice)) { $('#partner-notice').textContent = p.notice; $('#partner-notice').hidden = false; }
     var s2 = $('#step2-text');
-    if (s2) s2.textContent = '在 ' + p.name + ' 注册、充值，进入「令牌 / API Key」页面准备 Key；或者直接在软件里登录官方账号。';
+    if (s2) s2.textContent = fill(u('pStep2'), name);
     var reg = safeUrl(p.register_url) || url;
     var tokens = safeUrl(p.token_page_url);
     var cta = $('#partner-cta');
+    var old = $('#partner-cta-a');
+    if (old) old.parentNode.removeChild(old);
     if (p.one_click_import) {
-      $('#partner-cta-text').textContent = p.name + ' 支持智能路由和一键导入，推荐用这种方式。';
+      $('#partner-cta-text').textContent = fill(u('pCta'), name);
       $('#path-b').classList.add('featured');
       cta.hidden = !reg;
-      if (reg) { $('#partner-register').href = reg; $('#partner-register').textContent = '去 ' + p.name + ' 注册'; }
-      if (tokens) { $('#partner-tokens').href = tokens; $('#partner-tokens').hidden = false; }
+      if (reg) { $('#partner-register').href = reg; $('#partner-register').textContent = fill(u('pRegister'), name); }
+      if (tokens) { $('#partner-tokens').href = tokens; $('#partner-tokens').textContent = u('pTokens'); $('#partner-tokens').hidden = false; }
     } else {
       $('#path-a').classList.add('featured');
-      var box = el('div', { class: 'partner-cta' }, [
-        el('p', { text: '在 ' + p.name + ' 按这个方法创建 Key 并手动配置。' }),
+      var box = el('div', { class: 'partner-cta', id: 'partner-cta-a' }, [
+        el('p', { text: fill(u('pManual'), name) }),
         el('div', { class: 'actions' }, [
-          reg ? el('a', { class: 'btn btn-primary', href: reg, target: '_blank', rel: 'noopener', text: '去 ' + p.name + ' 注册' }) : null,
-          tokens ? el('a', { class: 'btn btn-ghost', href: tokens, target: '_blank', rel: 'noopener', text: '打开令牌页' }) : null
+          reg ? el('a', { class: 'btn btn-primary', href: reg, target: '_blank', rel: 'noopener', text: fill(u('pRegister'), name) }) : null,
+          tokens ? el('a', { class: 'btn btn-ghost', href: tokens, target: '_blank', rel: 'noopener', text: u('pTokens') }) : null
         ])
       ]);
       $('#path-a').insertBefore(box, $('#path-a .fine'));
     }
     var foot = $('#partner-foot');
     if (url) { foot.href = url; foot.textContent = p.name + ' ↗'; foot.hidden = false; }
-    $('#partner-foot-note').textContent = ' 本页由 ' + p.name + ' 托管。';
+    $('#partner-foot-note').textContent = fill(u('pFoot'), name);
   }
 
   /* ---------- static UI ---------- */
+  var reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   function initUi() {
     var top = $('#topbar');
     var onScroll = function () { top.classList.toggle('scrolled', window.scrollY > 8); };
@@ -572,6 +648,7 @@
       top.classList.toggle('menu-open', open);
     });
     $$('a', nav).forEach(function (a) { a.addEventListener('click', function () { menu.setAttribute('aria-expanded', 'false'); nav.classList.remove('open'); top.classList.remove('menu-open'); }); });
+    langListeners.push(function () { menu.setAttribute('aria-label', menu.getAttribute('aria-expanded') === 'true' ? u('menuClose') : u('menuOpen')); });
 
     var theme = $('#theme-btn');
     if (theme) theme.addEventListener('click', function () {
@@ -581,25 +658,32 @@
       try { localStorage.setItem('oc-theme', next); } catch (e) {}
     });
 
+    // 语言：宽屏分段按钮与窄屏下拉框共用同一个状态
     $$('[data-lang-btn]').forEach(function (b) { b.addEventListener('click', function () { applyLang(b.getAttribute('data-lang-btn'), true); }); });
-    $$('[data-copy]').forEach(function (b) { b.addEventListener('click', function () { copy(b.getAttribute('data-copy-' + lang) || b.getAttribute('data-copy'), u('copyPrompt')); }); });
+    var sel = $('#lang-select');
+    if (sel) sel.addEventListener('change', function () { applyLang(sel.value, true); });
+
+    // 复制一句话需求：简体用按钮上的 data-copy，其余语言取词典里 data-copy-key 对应的译文
+    $$('[data-copy]').forEach(function (b) {
+      b.addEventListener('click', function () { copy(t(b.getAttribute('data-copy-key'), b.getAttribute('data-copy')), u('copyPrompt')); });
+    });
     $$('[data-copy-from]').forEach(function (b) { b.addEventListener('click', function () { copy($('#' + b.getAttribute('data-copy-from')).textContent, u('copyCmd')); }); });
     $$('[data-copy-text]').forEach(function (b) { b.addEventListener('click', function () { copy(b.getAttribute('data-copy-text'), u(b.getAttribute('data-copy-msg') || 'copied')); }); });
     var pc = $('#hero-dl-pc');
     if (pc) pc.addEventListener('click', function () { copy(location.href.split('#')[0] + '#download', u('copyLink')); });
 
     var tabs = $$('.tabs [role="tab"]');
-    var select = function (t) {
+    var select = function (tab) {
       tabs.forEach(function (x) {
-        var on = x === t;
+        var on = x === tab;
         x.setAttribute('aria-selected', String(on));
         x.tabIndex = on ? 0 : -1;
         document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
       });
     };
-    tabs.forEach(function (t, i) {
-      t.addEventListener('click', function () { select(t); });
-      t.addEventListener('keydown', function (e) {
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () { select(tab); });
+      tab.addEventListener('keydown', function (e) {
         var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
         if (!d) return;
         var n = tabs[(i + d + tabs.length) % tabs.length];
@@ -611,13 +695,13 @@
     $('#video-dialog').addEventListener('close', function () { $('#vd-stage').textContent = ''; $('#vd-chapters').textContent = ''; });
     $('#video-dialog').addEventListener('click', function (e) { if (e.target === e.currentTarget) closeVideo(); });
 
-    // 直接播放本地精选短片按钮（用于精选影片区块，不依赖 config/release 列表）
+    // 直接播放本地短片的按钮（作品墙里的「超级导演 27 秒合集」）：不依赖 config/release 列表；data-clip-portrait 表示竖屏片
     $$('[data-clip]').forEach(function (b) {
       b.addEventListener('click', function () {
         var url = safeUrl(b.getAttribute('data-clip'));
         if (!url) return;
-        var title = b.getAttribute('data-clip-title') || '';
-        openVideo({}, title, '', url, 0, false);
+        var title = t(b.getAttribute('data-clip-title-key'), b.getAttribute('data-clip-title') || '');
+        openVideo({}, title, '', url, 0, b.hasAttribute('data-clip-portrait'));
       });
     });
 
@@ -636,7 +720,7 @@
         box.classList.toggle('playing', playing || v.currentTime > 0);
         if (playBtn) {
           playBtn.innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
-          playBtn.setAttribute('aria-label', playing ? '暂停' : '播放');
+          playBtn.setAttribute('aria-label', playing ? u('pauseBtn') : u('playBtn'));
         }
       };
       var syncTime = function () {
@@ -668,7 +752,7 @@
       if (muteBtn) muteBtn.addEventListener('click', function () {
         v.muted = !v.muted;
         muteBtn.innerHTML = v.muted ? ICON_MUTE : ICON_VOL;
-        muteBtn.setAttribute('aria-label', v.muted ? '取消静音' : '静音');
+        muteBtn.setAttribute('aria-label', v.muted ? u('unmuteBtn') : u('muteBtn'));
       });
       if (fsBtn) fsBtn.addEventListener('click', function () {
         if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
@@ -677,21 +761,23 @@
       });
     });
 
-    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) root.classList.add('reduce');
+    // 首屏打字机：系统开了「减少动态效果」就不跑；首屏滚出视口后暂停
     var typer = $('#typer');
     if (typer && !reduce) {
-      var lines = function () { try { return JSON.parse(typer.getAttribute('data-lines-' + lang) || typer.getAttribute('data-lines') || '[]'); } catch (e) { return []; } };
-      var L = lines(), li = 0, ci = (L[0] || '').length, dir = -1, hold = 18;
-      langListeners.push(function () { L = lines(); li = 0; ci = (L[0] || '').length; dir = -1; hold = 18; typer.textContent = L[0] || ''; });
+      var L = lines(typer), li = 0, ci = (L[0] || '').length, dir = -1, hold = 18, heroOn = true;
+      langListeners.push(function () { L = lines(typer); li = 0; ci = (L[0] || '').length; dir = -1; hold = 18; typer.textContent = L[0] || ''; });
+      if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { heroOn = es[es.length - 1].isIntersecting; }).observe(typer);
       setInterval(function () {
-        if (!L.length) return;
+        if (!L.length || !heroOn || document.hidden) return;
         if (hold > 0) { hold--; return; }
         ci += dir;
         if (ci <= 0) { ci = 0; dir = 1; li = (li + 1) % L.length; hold = 3; }
         else if (ci >= L[li].length) { ci = L[li].length; dir = -1; hold = 22; }
         typer.textContent = L[li].slice(0, ci);
       }, 95);
+    } else if (typer) {
+      langListeners.push(function () { typer.textContent = lines(typer)[0] || ''; });
     }
 
     if ('IntersectionObserver' in window && !reduce) {
@@ -706,8 +792,16 @@
     renderDownloads();
     renderHero();
     renderVideos();
+    renderPartner();
     if (CFG) showAgent(agentCur);
   }
+
+  // 给 fx.js 用的共享工具
+  window.OC = {
+    $: $, $$: $$, el: el, toast: toast, copy: copy, u: u, t: t, lines: lines, fill: fill, reduce: reduce,
+    lang: function () { return lang; },
+    onLang: function (f) { langListeners.push(f); }
+  };
 
   function start() {
     root.setAttribute('data-zh-title', document.title);
@@ -720,7 +814,6 @@
       if (!CFG) return;
       renderAll();
       initAgent();
-      renderPartner();
       $$('[data-copy-cfg]').forEach(function (b) {
         b.addEventListener('click', function () { copy(String(get(CFG, b.getAttribute('data-copy-cfg')) || ''), u('copyGroup')); });
       });

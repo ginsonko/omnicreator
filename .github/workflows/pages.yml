@@ -53,5 +53,9 @@ jobs:
         with:
           path: _pages
 
+      # 等待 GitHub Actions 产物元数据索引同步，避免大体积站点产物在毫秒级查询时偶发 Found 0 artifact(s)
+      - name: Wait for artifact index sync
+        run: sleep 8
+
       - id: deployment
         uses: actions/deploy-pages@v4
